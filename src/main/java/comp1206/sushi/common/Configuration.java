@@ -1,7 +1,9 @@
 package comp1206.sushi.common;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Configuration {
@@ -104,36 +106,36 @@ public class Configuration {
         return restaurant;
     }
 
-    public Map<String, Postcode> getPostcodes() {
-        return postcodes;
+    public ArrayList<Postcode> getPostcodes() {
+        return new ArrayList<>(postcodes.values());
     }
 
-    public Map<String, Supplier> getSupplier() {
-        return supplier;
+    public ArrayList<Supplier> getSupplier() {
+        return new ArrayList<>(supplier.values());
     }
 
-    public Map<String, Ingredient> getIngredients() {
-        return ingredients;
+    public ArrayList<Ingredient> getIngredients() {
+        return new ArrayList<>(ingredients.values());
     }
 
-    public Map<String, Dish> getDishes() {
-        return dishes;
+    public ArrayList<Dish> getDishes() {
+        return new ArrayList<>(dishes.values());
     }
 
-    public Map<String, User> getUsers() {
-        return users;
+    public ArrayList<User> getUsers() {
+        return new ArrayList<>(users.values());
     }
 
-    public Map<String, Staff> getStaff() {
-        return staff;
+    public ArrayList<Staff> getStaff() {
+        return new ArrayList<>(staff.values());
     }
 
-    public Map<String, Drone> getDrones() {
-        return drones;
+    public ArrayList<Drone> getDrones() {
+        return new ArrayList<>(drones.values());
     }
 
-    public Map<String, Order> getOrders() {
-        return orders;
+    public ArrayList<Order> getOrders() {
+        return new ArrayList<>(orders.values());
     }
 
     public StockManager getStockManager() {
