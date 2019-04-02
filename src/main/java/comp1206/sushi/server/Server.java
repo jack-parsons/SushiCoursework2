@@ -26,13 +26,14 @@ public class Server implements ServerInterface {
 	public ArrayList<Supplier> suppliers = new ArrayList<Supplier>();
 	public ArrayList<User> users = new ArrayList<User>();
 	public ArrayList<Postcode> postcodes = new ArrayList<Postcode>();
-	private StockManager stockManager;
+	private StockManager stockManager = new StockManager();
 	private ArrayList<UpdateListener> listeners = new ArrayList<UpdateListener>();
 	
 	public Server() {
         logger.info("Starting up server...");
 
 //        loadConfiguration("Configuration.txt");
+
 		
 		Postcode restaurantPostcode = new Postcode("SO17 1BJ");
 		restaurant = new Restaurant("Mock Restaurant",restaurantPostcode);
@@ -98,29 +99,29 @@ public class Server implements ServerInterface {
 		List<Dish> dishes = getDishes();
 		HashMap<Dish, Number> levels = new HashMap<Dish, Number>();
 		for(Dish dish : dishes) {
-			levels.put(dish,random.nextInt(50));
+			levels.put(dish, stockManager.getDishStock(dish));
 		}
 		return levels;
 	}
 	
 	@Override
 	public void setRestockingIngredientsEnabled(boolean enabled) {
-		
+		stockManager.setRestockingIngredientsEnabled(enabled);
 	}
 
 	@Override
 	public void setRestockingDishesEnabled(boolean enabled) {
-		
+		stockManager.setRestockingDishesEnabled(enabled);
 	}
 	
 	@Override
 	public void setStock(Dish dish, Number stock) {
-	
+		stockManager.setDishStock(dish, stock);
 	}
 
 	@Override
 	public void setStock(Ingredient ingredient, Number stock) {
-		
+		stockManager.setIngredientsStock(ingredient, stock);
 	}
 
 	@Override
@@ -225,7 +226,7 @@ public class Server implements ServerInterface {
 		List<Ingredient> dishes = getIngredients();
 		HashMap<Ingredient, Number> levels = new HashMap<Ingredient, Number>();
 		for(Ingredient ingredient : ingredients) {
-			levels.put(ingredient,random.nextInt(50));
+			levels.put(ingredient, stockManager.getIngredientsStock(ingredient));
 		}
 		return levels;
 	}
