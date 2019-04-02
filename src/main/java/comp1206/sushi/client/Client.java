@@ -1,21 +1,22 @@
 package comp1206.sushi.client;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import comp1206.sushi.common.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import comp1206.sushi.common.Dish;
-import comp1206.sushi.common.Order;
-import comp1206.sushi.common.Postcode;
-import comp1206.sushi.common.Restaurant;
-import comp1206.sushi.common.UpdateListener;
-import comp1206.sushi.common.User;
 
 public class Client implements ClientInterface {
 
     private static final Logger logger = LogManager.getLogger("Client");
+	private ArrayList<UpdateListener> listeners = new ArrayList<UpdateListener>();
+
+    private Restaurant restaurant = new Restaurant("Test", new Postcode("SO17 1AW")); // TODO get actual value
+    private List<Postcode> postcodes = new ArrayList<>();
+    private List<Dish> dishes = new ArrayList<>();
 	
 	public Client() {
         logger.info("Starting up client...");
@@ -23,20 +24,17 @@ public class Client implements ClientInterface {
 	
 	@Override
 	public Restaurant getRestaurant() {
-		// TODO Auto-generated method stub
-		return null;
+		return restaurant;
 	}
 	
 	@Override
 	public String getRestaurantName() {
-		// TODO Auto-generated method stub
-		return null;
+		return restaurant.getName();
 	}
 
 	@Override
 	public Postcode getRestaurantPostcode() {
-		// TODO Auto-generated method stub
-		return null;
+		return restaurant.getLocation();
 	}
 	
 	@Override
@@ -53,68 +51,58 @@ public class Client implements ClientInterface {
 
 	@Override
 	public List<Postcode> getPostcodes() {
-		// TODO Auto-generated method stub
-		return null;
+		return postcodes;
 	}
 
 	@Override
 	public List<Dish> getDishes() {
-		// TODO Auto-generated method stub
-		return null;
+		return dishes;
 	}
 
 	@Override
 	public String getDishDescription(Dish dish) {
-		// TODO Auto-generated method stub
-		return null;
+		return dish.getDescription();
 	}
 
 	@Override
 	public Number getDishPrice(Dish dish) {
-		// TODO Auto-generated method stub
-		return null;
+		return dish.getPrice();
 	}
 
 	@Override
 	public Map<Dish, Number> getBasket(User user) {
-		// TODO Auto-generated method stub
-		return null;
+		return user.getBasket();
 	}
 
 	@Override
 	public Number getBasketCost(User user) {
-		// TODO Auto-generated method stub
-		return null;
+		return user.getBasketCost();
 	}
 
 	@Override
 	public void addDishToBasket(User user, Dish dish, Number quantity) {
-		// TODO Auto-generated method stub
-
+		user.addDishToBasket(dish, quantity);
 	}
 
 	@Override
 	public void updateDishInBasket(User user, Dish dish, Number quantity) {
-		// TODO Auto-generated method stub
-
+		user.updateDishInBasket(dish, quantity);
 	}
 
 	@Override
 	public Order checkoutBasket(User user) {
-		// TODO Auto-generated method stub
-		return null;
+		// TODO finish
+		return new Order(user.getBasket());
 	}
 
 	@Override
 	public void clearBasket(User user) {
-		// TODO Auto-generated method stub
-
+		user.clearBasket();
 	}
 
 	@Override
 	public List<Order> getOrders(User user) {
-		// TODO Auto-generated method stub
-		return null;
+		return user.getOrders();
 	}
 
 	@Override
@@ -125,14 +113,12 @@ public class Client implements ClientInterface {
 
 	@Override
 	public String getOrderStatus(Order order) {
-		// TODO Auto-generated method stub
-		return null;
+		return order.getStatus();
 	}
 
 	@Override
 	public Number getOrderCost(Order order) {
-		// TODO Auto-generated method stub
-		return null;
+		return order.getOrderCost();
 	}
 
 	@Override
@@ -143,14 +129,12 @@ public class Client implements ClientInterface {
 
 	@Override
 	public void addUpdateListener(UpdateListener listener) {
-		// TODO Auto-generated method stub
-
+		listeners.add(listener);
 	}
 
 	@Override
 	public void notifyUpdate() {
-		// TODO Auto-generated method stub
-
+		this.listeners.forEach(listener -> listener.updated(new UpdateEvent()));
 	}
 
 }

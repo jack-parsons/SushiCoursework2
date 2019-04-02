@@ -48,4 +48,12 @@ public class Order extends Model {
 		this.status = status;
 	}
 
+	public Number getOrderCost() {
+		double total = 0;
+		for (Dish dish : dishes.keySet()) {
+			total += dish.getPrice().doubleValue() * dishes.get(dish).doubleValue();
+		}
+		return total;
+	}
+
 }
