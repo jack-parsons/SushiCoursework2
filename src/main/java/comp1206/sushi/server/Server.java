@@ -7,8 +7,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 
-import javax.swing.JOptionPane;
-
 import comp1206.sushi.common.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,17 +15,17 @@ public class Server implements ServerInterface {
 
     private static final Logger logger = LogManager.getLogger("Server");
 	
-	public Restaurant restaurant;
-	public ArrayList<Dish> dishes = new ArrayList<Dish>();
-	public ArrayList<Drone> drones = new ArrayList<Drone>();
-	public ArrayList<Ingredient> ingredients = new ArrayList<Ingredient>();
-	public ArrayList<Order> orders = new ArrayList<Order>();
-	public ArrayList<Staff> staff = new ArrayList<Staff>();
-	public ArrayList<Supplier> suppliers = new ArrayList<Supplier>();
-	public ArrayList<User> users = new ArrayList<User>();
-	public ArrayList<Postcode> postcodes = new ArrayList<Postcode>();
+	private Restaurant restaurant;
+	private ArrayList<Dish> dishes = new ArrayList<>();
+	private ArrayList<Drone> drones = new ArrayList<>();
+	private ArrayList<Ingredient> ingredients = new ArrayList<>();
+	private ArrayList<Order> orders = new ArrayList<>();
+	private ArrayList<Staff> staff = new ArrayList<>();
+	private ArrayList<Supplier> suppliers = new ArrayList<>();
+	private ArrayList<User> users = new ArrayList<>();
+	private ArrayList<Postcode> postcodes = new ArrayList<>();
 	private StockManager stockManager = new StockManager();
-	private ArrayList<UpdateListener> listeners = new ArrayList<UpdateListener>();
+	private ArrayList<UpdateListener> listeners = new ArrayList<>();
 	
 	public Server() {
         logger.info("Starting up server...");
@@ -41,8 +39,8 @@ public class Server implements ServerInterface {
 		Postcode postcode1 = addPostcode("SO17 1TJ");
 		Postcode postcode2 = addPostcode("SO17 1BX");
 		Postcode postcode3 = addPostcode("SO17 2NJ");
-		Postcode postcode4 = addPostcode("SO17 1TW");
-		Postcode postcode5 = addPostcode("SO17 2LB");
+		addPostcode("SO17 1TW");
+		addPostcode("SO17 2LB");
 
 		Supplier supplier1 = addSupplier("Supplier 1",postcode1);
 		Supplier supplier2 = addSupplier("Supplier 2",postcode2);
@@ -95,9 +93,8 @@ public class Server implements ServerInterface {
 
 	@Override
 	public Map<Dish, Number> getDishStockLevels() {
-		Random random = new Random();
 		List<Dish> dishes = getDishes();
-		HashMap<Dish, Number> levels = new HashMap<Dish, Number>();
+		HashMap<Dish, Number> levels = new HashMap<>();
 		for(Dish dish : dishes) {
 			levels.put(dish, stockManager.getDishStock(dish));
 		}
@@ -140,8 +137,7 @@ public class Server implements ServerInterface {
 
 	@Override
 	public void removeIngredient(Ingredient ingredient) {
-		int index = this.ingredients.indexOf(ingredient);
-		this.ingredients.remove(index);
+		this.ingredients.remove(ingredient);
 		this.notifyUpdate();
 	}
 
@@ -160,8 +156,7 @@ public class Server implements ServerInterface {
 
 	@Override
 	public void removeSupplier(Supplier supplier) {
-		int index = this.suppliers.indexOf(supplier);
-		this.suppliers.remove(index);
+		this.suppliers.remove(supplier);
 		this.notifyUpdate();
 	}
 
@@ -179,8 +174,7 @@ public class Server implements ServerInterface {
 
 	@Override
 	public void removeDrone(Drone drone) {
-		int index = this.drones.indexOf(drone);
-		this.drones.remove(index);
+		this.drones.remove(drone);
 		this.notifyUpdate();
 	}
 
@@ -209,8 +203,7 @@ public class Server implements ServerInterface {
 
 	@Override
 	public void removeOrder(Order order) {
-		int index = this.orders.indexOf(order);
-		this.orders.remove(index);
+		this.orders.remove(order);
 		this.notifyUpdate();
 	}
 	
@@ -222,10 +215,8 @@ public class Server implements ServerInterface {
 
 	@Override
 	public Map<Ingredient, Number> getIngredientStockLevels() {
-		Random random = new Random();
-		List<Ingredient> dishes = getIngredients();
-		HashMap<Ingredient, Number> levels = new HashMap<Ingredient, Number>();
-		for(Ingredient ingredient : ingredients) {
+		HashMap<Ingredient, Number> levels = new HashMap<>();
+		for(Ingredient ingredient : getIngredients()) {
 			levels.put(ingredient, stockManager.getIngredientsStock(ingredient));
 		}
 		return levels;
@@ -243,13 +234,12 @@ public class Server implements ServerInterface {
 
 	@Override
 	public Number getOrderDistance(Order order) {
-		Order mock = (Order)order;
-		return mock.getDistance();
+		return order.getDistance();
 	}
 
 	@Override
 	public void addIngredientToDish(Dish dish, Ingredient ingredient, Number quantity) {
-		if(quantity == Integer.valueOf(0)) {
+		if(quantity.equals(0)) {
 			removeIngredientFromDish(dish,ingredient);
 		} else {
 			dish.getRecipe().put(ingredient,quantity);
