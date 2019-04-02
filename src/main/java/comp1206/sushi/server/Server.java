@@ -121,6 +121,8 @@ public class Server implements ServerInterface {
 		stockManager.setIngredientsStock(ingredient, stock);
 	}
 
+
+
 	@Override
 	public List<Ingredient> getIngredients() {
 		return this.ingredients;
