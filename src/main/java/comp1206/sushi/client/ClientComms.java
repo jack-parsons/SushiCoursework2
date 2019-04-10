@@ -1,6 +1,6 @@
 package comp1206.sushi.client;
 
-import comp1206.sushi.comms.Comms;
+import comp1206.sushi.common.Comms;
 
 import java.io.BufferedReader;
 import java.io.IOException;

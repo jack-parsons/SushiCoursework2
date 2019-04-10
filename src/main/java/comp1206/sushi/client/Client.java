@@ -2,11 +2,11 @@ package comp1206.sushi.client;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import comp1206.sushi.common.*;
+import comp1206.sushi.common.Comms;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -48,13 +48,22 @@ public class Client implements ClientInterface {
 	
 	@Override
 	public User register(String username, String password, String address, Postcode postcode) {
-		// TODO Auto-generated method stub
-		return null;
+		clientComms.sendMessage(String.format("REGISTER|USERNAME=%s|PASSWORD=%s|ADDRESS=%s|POSTCODE=%s", username, password, address, postcode.getName()));
+		return new User(username, password, address, postcode);
 	}
 
 	@Override
 	public User login(String username, String password) {
-		// TODO Auto-generated method stub
+        clientComms.sendMessage(String.format("LOGIN|USERNAME=%s|PASSWORD=%s", username, password));
+		try {
+			String reply = clientComms.receiveMessageWait();
+			String postcode = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.POSTCODE);
+			String address = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.ADDRESS);
+			System.out.println(username+ password +address+postcode);
+			return new User(username, password, address, new Postcode(postcode));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		return null;
 	}
 

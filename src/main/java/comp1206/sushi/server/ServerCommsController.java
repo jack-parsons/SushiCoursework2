@@ -1,6 +1,6 @@
 package comp1206.sushi.server;
 
-import comp1206.sushi.comms.Comms;
+import comp1206.sushi.common.Comms;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -36,10 +36,18 @@ public class ServerCommsController implements Runnable {
     public String recieveMessage(String clientUsername) throws IOException {
         for (ServerComms serverComms : this.serverComms) {
             if (serverComms.getUsername().equals(clientUsername)) {
-                return serverComms.revieveMessage();
+                return serverComms.receiveMessage();
             }
         }
         return null;
+    }
+
+    public String[] getUsernames () {
+        String[] users = new String[serverComms.size()];
+        for (int i = 0; i < users.length; i ++) {
+            users[i] = serverComms.get(i).getUsername();
+        }
+        return users;
     }
 }
 
@@ -47,8 +55,22 @@ class ServerComms extends Comms{
     private String username;
 
     ServerComms(Socket socket) throws IOException {
+        this.socket = socket;
         connectionOutput = new PrintWriter(socket.getOutputStream(), true);
         connectionInput = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+        System.out.println("User connected");
+
+        new Thread(this::checkInput);
+    }
+
+    private void checkInput() {
+        try {
+            username=receiveMessageWait();
+        } catch (IOException e) {
+            System.out.println("User connected");
+        }
+        System.out.println("User joined: " + username);
     }
 
     public String getUsername() {

@@ -1,13 +1,11 @@
 package comp1206.sushi.server;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Random;
 
 import comp1206.sushi.common.*;
+import comp1206.sushi.common.Comms;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
  
@@ -33,6 +31,30 @@ public class Server implements ServerInterface {
         logger.info("Starting up server...");
 
 //        loadConfiguration("Configuration.txt");
+
+		commsController = new ServerCommsController();
+		new Thread(commsController).start();
+
+		new Thread(() -> {
+			while(true) {
+					String username = "1";
+					try {
+						if (username != null) {
+							String reply = commsController.recieveMessage(username);
+							System.out.println(reply);
+							if (Comms.extractMessageType(reply) != null) {
+								switch (Objects.requireNonNull(Comms.extractMessageType(reply))) {
+									case LOGIN:
+										commsController.sendMessage("NEW_USER|ADDRESS=1234|POSTCODED=TW11 8QA", username);
+								}
+							}
+						}
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+
+		}).start();
 		
 		Postcode restaurantPostcode = new Postcode("SO17 1BJ");
 		restaurant = new Restaurant("Mock Restaurant",restaurantPostcode);
@@ -74,7 +96,6 @@ public class Server implements ServerInterface {
 
 		startStaff();
 
-		commsController = new ServerCommsController();
 	}
 	
 	@Override
