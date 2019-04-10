@@ -26,6 +26,8 @@ public class Server implements ServerInterface {
 	private ArrayList<Postcode> postcodes = new ArrayList<>();
 	private StockManager stockManager = new StockManager();
 	private ArrayList<UpdateListener> listeners = new ArrayList<>();
+
+	private ServerCommsController commsController;
 	
 	public Server() {
         logger.info("Starting up server...");
@@ -71,6 +73,8 @@ public class Server implements ServerInterface {
 		addDrone(3);
 
 		startStaff();
+
+		commsController = new ServerCommsController();
 	}
 	
 	@Override

@@ -1,5 +1,6 @@
 package comp1206.sushi.client;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,9 +18,17 @@ public class Client implements ClientInterface {
     private Restaurant restaurant = new Restaurant("Test", new Postcode("SO17 1AW")); // TODO get actual value
     private List<Postcode> postcodes = new ArrayList<>();
     private List<Dish> dishes = new ArrayList<>();
+
+    private ClientComms clientComms;
 	
 	public Client() {
         logger.info("Starting up client...");
+
+		try {
+			clientComms = new ClientComms();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	@Override
