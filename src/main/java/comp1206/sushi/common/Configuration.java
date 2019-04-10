@@ -59,7 +59,7 @@ public class Configuration {
                             users.put(parts[1], new User(parts[1], parts[2], parts[3], postcodes.get(parts[4])));
                             break;
                         case "STAFF":
-                            staff.put(parts[1], new Staff(parts[1]));
+                            staff.put(parts[1], new Staff(parts[1], stockManager));
                             break;
                         case "DRONE":
                             drones.put(parts[1], new Drone(Integer.parseInt(parts[1])));
@@ -99,8 +99,6 @@ public class Configuration {
         }
         return lines;
     }
-
-
 
     public Restaurant getRestaurant() {
         return restaurant;

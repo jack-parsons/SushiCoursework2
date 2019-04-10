@@ -31,7 +31,6 @@ public class Server implements ServerInterface {
         logger.info("Starting up server...");
 
 //        loadConfiguration("Configuration.txt");
-
 		
 		Postcode restaurantPostcode = new Postcode("SO17 1BJ");
 		restaurant = new Restaurant("Mock Restaurant",restaurantPostcode);
@@ -70,6 +69,8 @@ public class Server implements ServerInterface {
 		addDrone(1);
 		addDrone(2);
 		addDrone(3);
+
+		startStaff();
 	}
 	
 	@Override
@@ -187,7 +188,7 @@ public class Server implements ServerInterface {
 
 	@Override
 	public Staff addStaff(String name) {
-		Staff mock = new Staff(name);
+		Staff mock = new Staff(name, stockManager);
 		this.staff.add(mock);
 		return mock;
 	}
@@ -304,7 +305,16 @@ public class Server implements ServerInterface {
 		orders = config.getOrders();
 		stockManager = config.getStockManager();
 
+		startStaff();
+		stockManager.initStock(dishes);
+
 		System.out.println("Loaded configuration: " + filename);
+	}
+
+	private void startStaff() {
+		for (Staff s : staff) {
+			new Thread(s).start();
+		}
 	}
 
 	@Override

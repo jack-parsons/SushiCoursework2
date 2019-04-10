@@ -1,5 +1,7 @@
 package comp1206.sushi.common;
 
+import com.sun.xml.internal.ws.api.ha.StickyFeature;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,6 +13,14 @@ public class StockManager {
     private boolean restockingIngredients = true;
     private boolean restockingDishes = true;
     private Map<Dish, Number> inProgressDishes = new HashMap<>();
+
+    public void initStock(List<Dish> dishes) {
+        for (Dish dish : dishes) {
+            if (!dishStock.containsKey(dish)) {
+                dishStock.put(dish, 0);
+            }
+        }
+    }
 
     public Number getDishStock(Dish dish) {
         Number stock = dishStock.get(dish);
@@ -44,7 +54,8 @@ public class StockManager {
      */
     synchronized public Dish findDishToPrepare() {
         for (Dish dish : dishStock.keySet()) {
-            if (dishStock.get(dish).doubleValue() < dish.getRestockThreshold().doubleValue()) {
+            if (dishStock.get(dish).doubleValue() + inProgressDishes.getOrDefault(dish, 0).doubleValue() <
+                    dish.getRestockThreshold().doubleValue()) {
                 boolean hasStock = true;
                 for (Ingredient ingredient : dish.getRecipe().keySet()) {
 
@@ -66,7 +77,8 @@ public class StockManager {
     }
 
     synchronized public void dishFinished(Dish dish) {
-        inProgressDishes.remove(dish);
+        inProgressDishes.put(dish, inProgressDishes.getOrDefault(
+                dish, 0).doubleValue() - dish.getRestockAmount().doubleValue());
         setDishStock(dish, getDishStock(dish).intValue() + dish.getRestockAmount().intValue());
     }
 }

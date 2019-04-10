@@ -2,16 +2,17 @@ package comp1206.sushi.common;
 
 public class Staff extends Model implements Runnable {
 	private static final int UPDATE_DELAY = 1000;
-	public static StockManager stockManager;
+	private StockManager stockManager;
 
 	private String name;
 	private String status;
 	private Number fatigue;
-	private boolean running;
+	private boolean running = true;
 	
-	public Staff(String name) {
+	public Staff(String name, StockManager stockManager) {
 		this.setName(name);
 		this.setFatigue(0);
+		this.stockManager = stockManager;
 	}
 
 	public String getName() {
@@ -51,7 +52,7 @@ public class Staff extends Model implements Runnable {
 					stockManager.dishFinished(restockDish);
 					setStatus("Idle");  // Return to idle state
 				}
-				Thread.sleep(UPDATE_DELAY);
+//				Thread.sleep(UPDATE_DELAY);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
