@@ -37,7 +37,7 @@ public class Server implements ServerInterface {
 
 		new Thread(() -> {
 			while(true) {
-					String username = "1";
+				for (String username : commsController.getUsernames())
 					try {
 						if (username != null) {
 							String reply = commsController.recieveMessage(username);
@@ -45,7 +45,7 @@ public class Server implements ServerInterface {
 							if (Comms.extractMessageType(reply) != null) {
 								switch (Objects.requireNonNull(Comms.extractMessageType(reply))) {
 									case LOGIN:
-										commsController.sendMessage("NEW_USER|ADDRESS=1234|POSTCODED=TW11 8QA", username);
+										commsController.sendMessage("NEW_USER|ADDRESS=1234|POSTCODE=TW11 8QA", username);
 								}
 							}
 						}

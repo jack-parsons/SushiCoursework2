@@ -18,7 +18,8 @@ public class ServerCommsController implements Runnable {
     public void run() {
         try (ServerSocket serverSocket = new ServerSocket(Comms.PORT)) {
             while (true) {
-                serverComms.add(new ServerComms(serverSocket.accept()));
+                ServerComms newServerComm = new ServerComms(serverSocket.accept());
+                serverComms.add(newServerComm);
             }
         } catch (IOException e) {
             e.printStackTrace(); // TODO sort out
@@ -61,12 +62,13 @@ class ServerComms extends Comms{
 
         System.out.println("User connected");
 
-        new Thread(this::checkInput);
+        new Thread(this::checkInput).start();
     }
 
     private void checkInput() {
         try {
             username=receiveMessageWait();
+            sendMessage("NEW_USER|USERNAME=%s|ADDRESS=%s|POSTCODE=%s|");
         } catch (IOException e) {
             System.out.println("User connected");
         }

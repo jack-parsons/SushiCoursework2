@@ -13,7 +13,8 @@ public abstract class Comms {
 
     public enum MessageType {
         LOGIN("LOGIN"),
-        REGISTER("REGISTER");
+        REGISTER("REGISTER"),
+        NEW_USER("NEW_USER");
 
         String name;
         MessageType (String name) {

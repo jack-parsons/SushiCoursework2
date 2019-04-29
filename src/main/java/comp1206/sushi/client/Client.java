@@ -56,10 +56,12 @@ public class Client implements ClientInterface {
 	public User login(String username, String password) {
         clientComms.sendMessage(String.format("LOGIN|USERNAME=%s|PASSWORD=%s", username, password));
 		try {
+			System.out.println("123");
 			String reply = clientComms.receiveMessageWait();
+			System.out.println("456");
 			String postcode = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.POSTCODE);
 			String address = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.ADDRESS);
-			System.out.println(username+ password +address+postcode);
+			System.out.println(username+ "|" +password +"|" +address+"|" +postcode);
 			return new User(username, password, address, new Postcode(postcode));
 		} catch (IOException e) {
 			e.printStackTrace();
