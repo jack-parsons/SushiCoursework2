@@ -14,7 +14,9 @@ public abstract class Comms {
     public enum MessageType {
         LOGIN("LOGIN"),
         REGISTER("REGISTER"),
-        NEW_USER("NEW_USER");
+        NEW_USER("NEW_USER"),
+        CLEAR_POSTCODES("CLEAR_POSTCODES"),
+        ADD_POSTCODE("ADD_POSTCODE");
 
         String name;
         MessageType (String name) {
@@ -43,7 +45,7 @@ public abstract class Comms {
     }
 
     public String receiveMessage() throws IOException {
-        if (socket.isConnected())
+        if (socket.isConnected() && !socket.isClosed())
             return connectionInput.readLine();
         return null;
     }
@@ -66,10 +68,10 @@ public abstract class Comms {
         return null;
     }
 
-    public static String extractMessageAttribute(String message, MessageAttribute messageType) {
+    public static String extractMessageAttribute(String message, MessageAttribute messageAttribute) {
         for (String part : message.split("\\|")) {
-            if (message.equals(messageType.name)) {
-                return message.substring(part.substring(messageType.name.length()).indexOf("="));
+            if (part.matches("( *)" + messageAttribute.name + "( *)=.*")) {
+                return part.substring(part.indexOf("=")+1);
             }
         }
         return null;

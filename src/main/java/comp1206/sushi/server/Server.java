@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
 
+import comp1206.sushi.client.Client;
 import comp1206.sushi.common.*;
 import comp1206.sushi.common.Comms;
+import javafx.geometry.Pos;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
  
@@ -37,24 +39,53 @@ public class Server implements ServerInterface {
 
 		new Thread(() -> {
 			while(true) {
-				for (String username : commsController.getUsernames())
-					try {
-						if (username != null) {
-							String reply = commsController.recieveMessage(username);
-							System.out.println(reply);
-							if (Comms.extractMessageType(reply) != null) {
-								switch (Objects.requireNonNull(Comms.extractMessageType(reply))) {
-									case LOGIN:
-										commsController.sendMessage("NEW_USER|ADDRESS=1234|POSTCODE=TW11 8QA", username);
-								}
-							}
-						}
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
+                for (ClientConnection clientConnection : commsController.getClientConnections()) {
+                    try {
 
+                        if (!clientConnection.checkUpdated()) {
+                            updateClient(clientConnection);
+                        }
+
+                        String reply = clientConnection.receiveMessage();
+                        System.out.println(reply);
+                        if (reply != null && Comms.extractMessageType(reply) != null) {
+                            switch (Objects.requireNonNull(Comms.extractMessageType(reply))) {
+                                case REGISTER:
+                                    // Add the new user to server
+                                    String username = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.USERNAME);
+                                    String password = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.USERNAME);
+                                    String address = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.USERNAME);
+                                    String postcodeRaw = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.USERNAME);
+                                    Postcode postcode = null;
+                                    for (Postcode postcode1 : postcodes) {
+                                        if(postcode1.getName().equals(postcodeRaw)) {
+                                            postcode = postcode1;
+                                        }
+                                    }
+                                    users.add(new User(username, password, address, postcode));
+                                case LOGIN:
+                                    for (User user : users) {
+                                        if (user.getName().equals(Comms.extractMessageAttribute(reply, Comms.MessageAttribute.USERNAME))) {
+                                            clientConnection.setUser(user);
+                                            clientConnection.sendMessage(String.format("NEW_USER|USERNAME=%s|POSTCODE=%s", user.getName(), user.getPostcode()));
+                                        }
+                                    }
+                                    break;
+                            }
+                        }
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
 		}).start();
+
+		addUpdateListener(updateEvent -> {
+            for (ClientConnection clientConnection : commsController.getClientConnections()) {
+                updateClient(clientConnection);
+            }
+        });
 		
 		Postcode restaurantPostcode = new Postcode("SO17 1BJ");
 		restaurant = new Restaurant("Mock Restaurant",restaurantPostcode);
@@ -97,6 +128,14 @@ public class Server implements ServerInterface {
 		startStaff();
 
 	}
+
+	private void updateClient(ClientConnection clientConnection) {
+	    clientConnection.sendMessage("CLEAR_POSTCODES");
+	    for (Postcode postcode : postcodes) {
+            clientConnection.sendMessage("ADD_POSTCODE|POSTCODE="+postcode);
+        }
+        System.out.println(12341234);
+    }
 	
 	@Override
 	public List<Dish> getDishes() {

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import comp1206.sushi.common.*;
 import comp1206.sushi.common.Comms;
@@ -29,6 +30,30 @@ public class Client implements ClientInterface {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+
+
+        new Thread(() -> {
+            while (true) {
+                try {
+                    String message = clientComms.receiveMessageWait();
+                    System.out.println(message);
+                    System.out.println(Comms.extractMessageAttribute(message, Comms.MessageAttribute.POSTCODE));
+                    switch (Objects.requireNonNull(Comms.extractMessageType(message))) {
+                        case CLEAR_POSTCODES:
+                            postcodes.clear();
+                            break;
+                        case ADD_POSTCODE:
+                            postcodes.add(new Postcode(Comms.extractMessageAttribute(message, Comms.MessageAttribute.POSTCODE)));
+                            break;
+                        case NEW_USER:
+                            break;
+                    }
+                    notifyUpdate();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
 	}
 	
 	@Override
@@ -48,7 +73,8 @@ public class Client implements ClientInterface {
 	
 	@Override
 	public User register(String username, String password, String address, Postcode postcode) {
-		clientComms.sendMessage(String.format("REGISTER|USERNAME=%s|PASSWORD=%s|ADDRESS=%s|POSTCODE=%s", username, password, address, postcode.getName()));
+		if (postcode != null)
+			clientComms.sendMessage(String.format("REGISTER|USERNAME=%s|PASSWORD=%s|ADDRESS=%s|POSTCODE=%s", username, password, address, postcode.getName()));
 		return new User(username, password, address, postcode);
 	}
 
