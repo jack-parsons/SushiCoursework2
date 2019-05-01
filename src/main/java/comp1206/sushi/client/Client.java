@@ -175,7 +175,6 @@ public class Client implements ClientInterface {
 
 	@Override
 	public Order checkoutBasket(User user) {
-		// TODO finish
 		Order basket = new Order(user.getBasket());
 		clientComms.sendMessage(String.format("ADD_ORDER|NAME=%s|DISHES=%s", basket.getName(), basket));
 		user.getOrders().add(basket);
@@ -210,8 +209,8 @@ public class Client implements ClientInterface {
 
 	@Override
 	public void cancelOrder(Order order) {
-		// TODO Auto-generated method stub
-
+		clientComms.sendMessage(String.format("CANCEL_ORDER|NAME=%s", order.getName()));
+		user.getOrders().remove(order);
 	}
 
 	@Override

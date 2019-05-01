@@ -91,6 +91,10 @@ public class Server implements ServerInterface {
 										orders.add(order);
 									}
 									break;
+								case CANCEL_ORDER:
+									String orderName = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.NAME);
+									orders.removeIf(order -> order.getName().equals(orderName));
+									break;
                             }
                         }
 

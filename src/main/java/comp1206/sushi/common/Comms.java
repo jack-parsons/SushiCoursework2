@@ -21,6 +21,7 @@ public abstract class Comms {
         ADD_DISH("ADD_DISH"),
         ADD_RESTAURANT("ADD_RESTAURANT"),
         CLEAR_ORDERS("CLEAR_ORDERS"),
+        CANCEL_ORDER("CANCEL_ORDER"),
         ADD_ORDER("ADD_ORDER");
 
         String name;
