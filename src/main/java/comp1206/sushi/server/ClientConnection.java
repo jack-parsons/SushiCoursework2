@@ -54,8 +54,4 @@ public class ClientConnection extends Comms {
     public User getUser() {
         return user;
     }
-
-    public void sendUser(User user) {
-
-    }
 }

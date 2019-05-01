@@ -53,15 +53,18 @@ public class Server implements ServerInterface {
                                 case REGISTER:
                                     // Add the new user to server
                                     String username = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.USERNAME);
-                                    String password = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.USERNAME);
-                                    String address = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.USERNAME);
-                                    String postcodeRaw = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.USERNAME);
+                                    String password = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.PASSWORD);
+                                    String address = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.ADDRESS);
+                                    String postcodeRaw = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.POSTCODE);
                                     Postcode postcode = null;
                                     for (Postcode postcode1 : postcodes) {
                                         if(postcode1.getName().equals(postcodeRaw)) {
                                             postcode = postcode1;
                                         }
                                     }
+                                    if (postcode == null) {
+                                    	throw new IllegalArgumentException("Postcode not found: " + postcodeRaw);
+									}
                                     users.add(new User(username, password, address, postcode));
                                 case LOGIN:
                                     for (User user : users) {
@@ -139,12 +142,12 @@ public class Server implements ServerInterface {
         for (Dish dish : dishes) {
 			clientConnection.sendMessage(String.format("ADD_DISH|NAME=%s|DESCRIPTION=%s|PRICE=%s", dish.getName(), dish.getDescription(), dish.getPrice()));
 		}
-
+//
 		clientConnection.sendMessage("CLEAR_ORDERS");
-		for (Order order : clientConnection.getUser().getOrders()) {
+//		for (Order order : clientConnection.getUser().getOrders()) {
 //			for (Dish dish : order.getDishes())
 //			clientConnection.sendMessage(String.format("ADD_ORDER|DISHES=%s"));
-		}
+//		}
 
 		clientConnection.sendMessage(String.format("ADD_RESTAURANT|NAME=%s|POSTCODE=%s", restaurant.getName(), restaurant.getLocation()));
     }

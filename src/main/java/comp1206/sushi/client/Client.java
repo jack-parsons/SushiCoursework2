@@ -1,10 +1,7 @@
 package comp1206.sushi.client;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import comp1206.sushi.common.*;
 import comp1206.sushi.common.Comms;
@@ -49,8 +46,6 @@ public class Client implements ClientInterface {
 							case ADD_POSTCODE:
 								postcodes.add(new Postcode(Comms.extractMessageAttribute(message, Comms.MessageAttribute.POSTCODE)));
 								break;
-							case NEW_USER:
-								break;
 							case CLEAR_DISHES:
 								dishes.clear();
 								break;
@@ -70,7 +65,25 @@ public class Client implements ClientInterface {
 								}
 								break;
 							case CLEAR_ORDERS:
-								user.clearOrders();
+								if (user != null)
+									user.clearOrders();
+								break;
+							case ADD_ORDER:
+								if (user != null) {
+									String dishesRaw = Comms.extractMessageAttribute(message, Comms.MessageAttribute.DISHES);
+									Order order;
+									if (dishesRaw != null) {
+										Map<String, Dish> dishMap = new HashMap<>();
+										for (Dish dish : dishes)
+											dishMap.put(dish.getName(), dish);
+										order = Configuration.retrieveOrder(dishesRaw, dishMap);
+									}
+									else
+										order = new Order();
+
+									order.setName(Comms.extractMessageAttribute(message, Comms.MessageAttribute.NAME));
+									user.getOrders().add(order);
+								}
 						}
 						notifyUpdate();
 					} else {

@@ -65,12 +65,7 @@ public class Configuration {
                             drones.put(parts[1], new Drone(Integer.parseInt(parts[1])));
                             break;
                         case "ORDER":
-                            Order order = new Order();
-                            for (String dish : parts[2].split(",")) {
-                                String[] dishParts = dish.split("\\*");
-                                order.addDish(dishes.get(dishParts[1].trim()), Integer.parseInt(dishParts[0].trim()));
-                            }
-                            orders.put(parts[1], order);
+                            orders.put(parts[1], retrieveOrder(parts[2], dishes));
                             break;
                         case "STOCK":
                             if (dishes.containsKey(parts[1])) {
@@ -87,6 +82,16 @@ public class Configuration {
                 }
             }
         }
+    }
+
+    public static Order retrieveOrder(String rawString, Map<String, Dish> dishes) {
+
+        Order order = new Order();
+        for (String dish : rawString.split(",")) {
+            String[] dishParts = dish.split("\\*");
+            order.addDish(dishes.get(dishParts[1].trim()), Integer.parseInt(dishParts[0].trim()));
+        }
+        return order;
     }
 
     private String[] splitLine(String line) {

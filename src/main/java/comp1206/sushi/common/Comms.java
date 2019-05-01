@@ -20,7 +20,8 @@ public abstract class Comms {
         CLEAR_DISHES("CLEAR_DISHES"),
         ADD_DISH("ADD_DISH"),
         ADD_RESTAURANT("ADD_RESTAURANT"),
-        CLEAR_ORDERS("CLEAR_DISHES");
+        CLEAR_ORDERS("CLEAR_ORDERS"),
+        ADD_ORDER("ADD_ORDER");
 
         String name;
         MessageType (String name) {
@@ -35,7 +36,8 @@ public abstract class Comms {
         POSTCODE("POSTCODE"),
         NAME("NAME"),
         DESCRIPTION("DESCRIPTION"),
-        PRICE("PRICE");
+        PRICE("PRICE"),
+        DISHES("DISHES");
 
         String name;
         MessageAttribute (String name) {
