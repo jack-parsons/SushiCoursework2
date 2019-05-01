@@ -69,8 +69,12 @@ public class Server implements ServerInterface {
                                 case LOGIN:
                                     for (User user : users) {
                                         if (user.getName().equals(Comms.extractMessageAttribute(reply, Comms.MessageAttribute.USERNAME))) {
-                                            clientConnection.setUser(user);
-                                            clientConnection.sendMessage(String.format("NEW_USER|USERNAME=%s|POSTCODE=%s", user.getName(), user.getPostcode()));
+                                        	if (user.checkPassword(Comms.extractMessageAttribute(reply, Comms.MessageAttribute.PASSWORD))) {
+												clientConnection.setUser(user);
+												clientConnection.sendMessage(String.format("NEW_USER|ADDRESS=%s|POSTCODE=%s", "", user.getPostcode()));
+											} else {
+                                        		clientConnection.sendMessage("LOGIN_REJECTED");
+											}
                                         }
                                     }
                                     break;

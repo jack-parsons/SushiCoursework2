@@ -124,9 +124,14 @@ public class Client implements ClientInterface {
         clientComms.sendMessage(String.format("LOGIN|USERNAME=%s|PASSWORD=%s", username, password));
 		try {
 			String reply = clientComms.receiveMessageWait();
-			String postcode = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.POSTCODE);
-			String address = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.ADDRESS);
-			return user = new User(username, password, address, new Postcode(postcode));
+			if (Comms.extractMessageType(reply) != Comms.MessageType.LOGIN_REJECTED) {
+				String postcode = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.POSTCODE);
+				String address = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.ADDRESS);
+				return user = new User(username, password, address, new Postcode(postcode));
+			} else {
+				// If password is incorrect
+				return null;
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

@@ -22,7 +22,8 @@ public abstract class Comms {
         ADD_RESTAURANT("ADD_RESTAURANT"),
         CLEAR_ORDERS("CLEAR_ORDERS"),
         CANCEL_ORDER("CANCEL_ORDER"),
-        ADD_ORDER("ADD_ORDER");
+        ADD_ORDER("ADD_ORDER"),
+        LOGIN_REJECTED("LOGIN_REJECTED");
 
         String name;
         MessageType (String name) {

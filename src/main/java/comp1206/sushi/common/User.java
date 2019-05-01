@@ -75,4 +75,8 @@ public class User extends Model {
 	public void clearOrders() {
 		orders.clear();
 	}
+
+	public boolean checkPassword(String passString) {
+		return passString == password;
+	}
 }
