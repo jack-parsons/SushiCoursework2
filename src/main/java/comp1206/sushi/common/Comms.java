@@ -16,7 +16,11 @@ public abstract class Comms {
         REGISTER("REGISTER"),
         NEW_USER("NEW_USER"),
         CLEAR_POSTCODES("CLEAR_POSTCODES"),
-        ADD_POSTCODE("ADD_POSTCODE");
+        ADD_POSTCODE("ADD_POSTCODE"),
+        CLEAR_DISHES("CLEAR_DISHES"),
+        ADD_DISH("ADD_DISH"),
+        ADD_RESTAURANT("ADD_RESTAURANT"),
+        CLEAR_ORDERS("CLEAR_DISHES");
 
         String name;
         MessageType (String name) {
@@ -28,7 +32,10 @@ public abstract class Comms {
         USERNAME("USERNAME"),
         PASSWORD("PASSWORD"),
         ADDRESS("ADDRESS"),
-        POSTCODE("POSTCODE");
+        POSTCODE("POSTCODE"),
+        NAME("NAME"),
+        DESCRIPTION("DESCRIPTION"),
+        PRICE("PRICE");
 
         String name;
         MessageAttribute (String name) {

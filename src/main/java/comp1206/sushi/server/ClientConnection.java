@@ -1,6 +1,7 @@
 package comp1206.sushi.server;
 
 import comp1206.sushi.common.Comms;
+import comp1206.sushi.common.Order;
 import comp1206.sushi.common.User;
 
 import java.io.BufferedReader;
@@ -48,5 +49,13 @@ public class ClientConnection extends Comms {
         boolean t = updated;
         updated = true;
         return t;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void sendUser(User user) {
+
     }
 }

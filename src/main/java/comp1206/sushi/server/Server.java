@@ -134,7 +134,19 @@ public class Server implements ServerInterface {
 	    for (Postcode postcode : postcodes) {
             clientConnection.sendMessage("ADD_POSTCODE|POSTCODE="+postcode);
         }
-        System.out.println(12341234);
+
+		clientConnection.sendMessage("CLEAR_DISHES");
+        for (Dish dish : dishes) {
+			clientConnection.sendMessage(String.format("ADD_DISH|NAME=%s|DESCRIPTION=%s|PRICE=%s", dish.getName(), dish.getDescription(), dish.getPrice()));
+		}
+
+		clientConnection.sendMessage("CLEAR_ORDERS");
+		for (Order order : clientConnection.getUser().getOrders()) {
+//			for (Dish dish : order.getDishes())
+//			clientConnection.sendMessage(String.format("ADD_ORDER|DISHES=%s"));
+		}
+
+		clientConnection.sendMessage(String.format("ADD_RESTAURANT|NAME=%s|POSTCODE=%s", restaurant.getName(), restaurant.getLocation()));
     }
 	
 	@Override
