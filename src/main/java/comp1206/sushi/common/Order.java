@@ -56,4 +56,14 @@ public class Order extends Model {
 		return total;
 	}
 
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		for (Dish dish : dishes.keySet()) {
+			sb.append(dishes.get(dish)).append(" * ").append(dish.getName()).append(", ");
+		}
+		sb.delete(sb.length()-2, sb.length());
+		return sb.toString();
+	}
+
 }

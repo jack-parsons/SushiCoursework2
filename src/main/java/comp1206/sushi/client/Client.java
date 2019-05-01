@@ -84,6 +84,7 @@ public class Client implements ClientInterface {
 									order.setName(Comms.extractMessageAttribute(message, Comms.MessageAttribute.NAME));
 									user.getOrders().add(order);
 								}
+								break;
 						}
 						notifyUpdate();
 					} else {
@@ -175,7 +176,10 @@ public class Client implements ClientInterface {
 	@Override
 	public Order checkoutBasket(User user) {
 		// TODO finish
-		return new Order(user.getBasket());
+		Order basket = new Order(user.getBasket());
+		clientComms.sendMessage(String.format("ADD_ORDER|NAME=%s|DISHES=%s", basket.getName(), basket));
+		user.getOrders().add(basket);
+		return basket;
 	}
 
 	@Override

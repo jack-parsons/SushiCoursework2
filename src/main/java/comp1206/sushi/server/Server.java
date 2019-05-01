@@ -74,6 +74,23 @@ public class Server implements ServerInterface {
                                         }
                                     }
                                     break;
+								case ADD_ORDER:
+									if (clientConnection.getUser() != null) {
+										String dishesRaw = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.DISHES);
+										Order order;
+										if (dishesRaw != null) {
+											Map<String, Dish> dishMap = new HashMap<>();
+											for (Dish dish : dishes)
+												dishMap.put(dish.getName(), dish);
+											order = Configuration.retrieveOrder(dishesRaw, dishMap);
+										} else
+											order = new Order();
+
+										order.setName(Comms.extractMessageAttribute(reply, Comms.MessageAttribute.NAME));
+										clientConnection.getUser().getOrders().add(order);
+										orders.add(order);
+									}
+									break;
                             }
                         }
 
@@ -355,6 +372,7 @@ public class Server implements ServerInterface {
 	@Override
 	public void removePostcode(Postcode postcode) throws UnableToDeleteException {
 		this.postcodes.remove(postcode);
+		// TODO make throw exception if cannot delete
 		this.notifyUpdate();
 	}
 
