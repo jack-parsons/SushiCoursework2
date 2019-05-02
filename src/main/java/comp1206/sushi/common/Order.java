@@ -30,6 +30,10 @@ public class Order extends Model {
 		dishes.put(dish, quantity);
 	}
 
+	public Map<Dish, Number> getDishQuantities() {
+		return dishes;
+	}
+
 	public Number getDistance() {
 		return 1;
 	}

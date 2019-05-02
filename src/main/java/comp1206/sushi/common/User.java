@@ -60,6 +60,10 @@ public class User extends Model {
 		return new Order(basket).getOrderCost();  // Create temp order and calculate price with it
 	}
 
+	public void updateBasket(Map<Dish, Number> basket) {
+		this.basket = basket;
+	}
+
 	public void updateDishInBasket(Dish dish, Number quantity) {
 		basket.put(dish, quantity);
 	}
@@ -77,6 +81,6 @@ public class User extends Model {
 	}
 
 	public boolean checkPassword(String passString) {
-		return passString == password;
+		return passString.equals(password);
 	}
 }

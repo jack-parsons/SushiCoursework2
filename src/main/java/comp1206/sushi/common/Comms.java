@@ -23,7 +23,8 @@ public abstract class Comms {
         CLEAR_ORDERS("CLEAR_ORDERS"),
         CANCEL_ORDER("CANCEL_ORDER"),
         ADD_ORDER("ADD_ORDER"),
-        LOGIN_REJECTED("LOGIN_REJECTED");
+        LOGIN_REJECTED("LOGIN_REJECTED"),
+        BASKET_UPDATE("BASKET_UPDATE");
 
         String name;
         MessageType (String name) {

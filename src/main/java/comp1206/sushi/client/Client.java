@@ -1,6 +1,7 @@
 package comp1206.sushi.client;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.util.*;
 
 import comp1206.sushi.common.*;
@@ -26,6 +27,21 @@ public class Client implements ClientInterface {
 
 		try {
 			clientComms = new ClientComms();
+		} catch (ConnectException e) {
+			// Keep trying to connect
+			new Thread(() -> {
+				while (true) {
+					try {
+						clientComms = new ClientComms();
+						System.out.println("Connection to server successful");
+						break;
+					} catch (ConnectException ignored) {
+
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+				}
+			}).start();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -34,65 +50,66 @@ public class Client implements ClientInterface {
         new Thread(() -> {
             while (true) {
                 try {
-                    String message = clientComms.receiveMessageWait();
-                    System.out.println(message);
-//                    System.out.println(Comms.extractMessageAttribute(message, Comms.MessageAttribute.NAME));
-					Comms.MessageType type = Comms.extractMessageType(message);
-					if (type != null) {
-						switch (type) {
-							case CLEAR_POSTCODES:
-								postcodes.clear();
-								break;
-							case ADD_POSTCODE:
-								postcodes.add(new Postcode(Comms.extractMessageAttribute(message, Comms.MessageAttribute.POSTCODE)));
-								break;
-							case CLEAR_DISHES:
-								dishes.clear();
-								break;
-							case ADD_DISH:
-								dishes.add(new Dish(
-										Comms.extractMessageAttribute(message, Comms.MessageAttribute.NAME),
-										Comms.extractMessageAttribute(message, Comms.MessageAttribute.DESCRIPTION),
-										Float.parseFloat(Objects.requireNonNull(Comms.extractMessageAttribute(message, Comms.MessageAttribute.PRICE))),
-										0, 0));
-								break;
-							case ADD_RESTAURANT:
-								for (Postcode postcode : postcodes) {
-									if (postcode.getName().equals(Comms.extractMessageAttribute(message, Comms.MessageAttribute.POSTCODE))) {
-										restaurant = new Restaurant(
-												Comms.extractMessageAttribute(message, Comms.MessageAttribute.NAME), postcode);
+                	if (clientComms != null) {
+						String message = clientComms.receiveMessageWait();
+						System.out.println(message);
+						//                    System.out.println(Comms.extractMessageAttribute(message, Comms.MessageAttribute.NAME));
+						Comms.MessageType type = Comms.extractMessageType(message);
+						if (type != null) {
+							switch (type) {
+								case CLEAR_POSTCODES:
+									postcodes.clear();
+									break;
+								case ADD_POSTCODE:
+									postcodes.add(new Postcode(Comms.extractMessageAttribute(message, Comms.MessageAttribute.POSTCODE)));
+									break;
+								case CLEAR_DISHES:
+									dishes.clear();
+									break;
+								case ADD_DISH:
+									dishes.add(new Dish(
+											Comms.extractMessageAttribute(message, Comms.MessageAttribute.NAME),
+											Comms.extractMessageAttribute(message, Comms.MessageAttribute.DESCRIPTION),
+											Float.parseFloat(Objects.requireNonNull(Comms.extractMessageAttribute(message, Comms.MessageAttribute.PRICE))),
+											0, 0));
+									break;
+								case ADD_RESTAURANT:
+									for (Postcode postcode : postcodes) {
+										if (postcode.getName().equals(Comms.extractMessageAttribute(message, Comms.MessageAttribute.POSTCODE))) {
+											restaurant = new Restaurant(
+													Comms.extractMessageAttribute(message, Comms.MessageAttribute.NAME), postcode);
+										}
 									}
-								}
-								break;
-							case CLEAR_ORDERS:
-								if (user != null)
-									user.clearOrders();
-								break;
-							case ADD_ORDER:
-								if (user != null) {
-									String dishesRaw = Comms.extractMessageAttribute(message, Comms.MessageAttribute.DISHES);
-									Order order;
-									if (dishesRaw != null) {
-										Map<String, Dish> dishMap = new HashMap<>();
-										for (Dish dish : dishes)
-											dishMap.put(dish.getName(), dish);
-										order = Configuration.retrieveOrder(dishesRaw, dishMap);
-									}
-									else
-										order = new Order();
+									break;
+								case CLEAR_ORDERS:
+									if (user != null)
+										user.clearOrders();
+									break;
+								case ADD_ORDER:
+									if (user != null) {
+										String dishesRaw = Comms.extractMessageAttribute(message, Comms.MessageAttribute.DISHES);
+										Order order;
+										if (dishesRaw != null) {
+											Map<String, Dish> dishMap = new HashMap<>();
+											for (Dish dish : dishes)
+												dishMap.put(dish.getName(), dish);
+											order = Configuration.retrieveOrder(dishesRaw, dishMap);
+										} else
+											order = new Order();
 
-									order.setName(Comms.extractMessageAttribute(message, Comms.MessageAttribute.NAME));
-									user.getOrders().add(order);
-								}
-								break;
+										order.setName(Comms.extractMessageAttribute(message, Comms.MessageAttribute.NAME));
+										user.getOrders().add(order);
+									}
+									break;
+							}
+							notifyUpdate();
+						} else {
+							throw new IllegalArgumentException("Type of message not found: " + message);
 						}
-						notifyUpdate();
-					} else {
-						throw new IllegalArgumentException("Type of message not found: " + message);
 					}
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
             }
         }).start();
 	}
@@ -176,6 +193,7 @@ public class Client implements ClientInterface {
 	@Override
 	public void updateDishInBasket(User user, Dish dish, Number quantity) {
 		user.updateDishInBasket(dish, quantity);
+		clientComms.sendMessage(String.format("BASKET_UPDATE|DISHES=%s", new Order(user.getBasket())));
 	}
 
 	@Override

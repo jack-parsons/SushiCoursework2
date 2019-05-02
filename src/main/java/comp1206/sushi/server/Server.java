@@ -97,7 +97,7 @@ public class Server implements ServerInterface {
 												dishMap.put(dish.getName(), dish);
 											order = Configuration.retrieveOrder(dishesRaw, dishMap);
 										} else
-											order = new Order();
+										order = new Order();
 
 										order.setName(Comms.extractMessageAttribute(reply, Comms.MessageAttribute.NAME));
 										clientConnection.getUser().getOrders().add(order);
@@ -108,6 +108,16 @@ public class Server implements ServerInterface {
 									String orderName = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.NAME);
 									orders.removeIf(order -> order.getName().equals(orderName));
 									break;
+								case BASKET_UPDATE:
+									String dishesRaw = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.DISHES);
+									Order order;
+									if (dishesRaw != null) {
+										Map<String, Dish> dishMap = new HashMap<>();
+										for (Dish dish : dishes)
+											dishMap.put(dish.getName(), dish);
+										order = Configuration.retrieveOrder(dishesRaw, dishMap);
+										clientConnection.getUser().updateBasket(order.getDishQuantities());
+									}
                             }
                         }
 
