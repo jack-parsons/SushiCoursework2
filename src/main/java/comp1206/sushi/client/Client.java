@@ -2,6 +2,7 @@ package comp1206.sushi.client;
 
 import java.io.IOException;
 import java.net.ConnectException;
+import java.net.SocketException;
 import java.util.*;
 
 import comp1206.sushi.common.*;
@@ -19,6 +20,7 @@ public class Client implements ClientInterface {
     private List<Dish> dishes = new ArrayList<>();
 
     private User user;
+    private boolean finishedInitialising = false;
 
     private ClientComms clientComms;
 	
@@ -27,26 +29,7 @@ public class Client implements ClientInterface {
 
         postcodes.add(new Postcode(""));
 
-		try {
-			clientComms = new ClientComms();
-		} catch (ConnectException e) {
-			// Keep trying to connect
-			new Thread(() -> {
-				while (true) {
-					try {
-						clientComms = new ClientComms();
-						System.out.println("Connection to server successful");
-						break;
-					} catch (ConnectException ignored) {
-
-					} catch (IOException e1) {
-						e1.printStackTrace();
-					}
-				}
-			}).start();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+        connectToServer();
 
 
         new Thread(() -> {
@@ -76,6 +59,7 @@ public class Client implements ClientInterface {
 										}
 									}
 									postcodes.add(new Postcode(name));
+                                    finishedInitialising = true;
 									break;
 								case CLEAR_DISHES:
 									dishes.clear();
@@ -121,12 +105,40 @@ public class Client implements ClientInterface {
 							throw new IllegalArgumentException("Type of message not found: " + message);
 						}
 					}
-				} catch (IOException e) {
+				} catch (SocketException e) {
+                    // Start trying to reconnect to server
+                    clientComms.disconnect();
+                    connectToServer();
+                }
+				catch (IOException e) {
 					e.printStackTrace();
 				}
             }
         }).start();
 	}
+
+	public void connectToServer() {
+        try {
+            clientComms = new ClientComms();
+        } catch (ConnectException e) {
+            // Keep trying to connect
+            new Thread(() -> {
+                while (true) {
+                    try {
+                        clientComms = new ClientComms();
+                        System.out.println("Connection to server successful");
+                        break;
+                    } catch (ConnectException ignored) {
+
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            }).start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 	
 	@Override
 	public Restaurant getRestaurant() {
@@ -258,7 +270,9 @@ public class Client implements ClientInterface {
 	@Override
 	public void notifyUpdate() {
 		try {
-			this.listeners.forEach(listener -> listener.updated(new UpdateEvent()));
+		    if (finishedInitialising) {
+                this.listeners.forEach(listener -> listener.updated(new UpdateEvent()));
+            }
 		} catch (NullPointerException e) {
 			e.printStackTrace();
 		}

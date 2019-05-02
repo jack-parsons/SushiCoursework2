@@ -88,4 +88,12 @@ public abstract class Comms {
         }
         return null;
     }
+
+    public void disconnect() {
+        try {
+            socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

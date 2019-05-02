@@ -1,7 +1,7 @@
 package comp1206.sushi.common;
 
 public class Staff extends Model implements Runnable {
-	private static final int UPDATE_DELAY = 1000;
+	private static final int UPDATE_DELAY = 100;
 	private StockManager stockManager;
 
 	private String name;
@@ -54,7 +54,7 @@ public class Staff extends Model implements Runnable {
 					stockManager.dishFinished(restockDish);
 					setStatus("Idle");  // Return to idle state
 				}
-//				Thread.sleep(UPDATE_DELAY);
+				Thread.sleep(UPDATE_DELAY);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
