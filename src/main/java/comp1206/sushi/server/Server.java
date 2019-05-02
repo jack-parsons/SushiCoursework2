@@ -25,7 +25,7 @@ public class Server implements ServerInterface {
 	private ArrayList<Supplier> suppliers = new ArrayList<>();
 	private ArrayList<User> users = new ArrayList<>();
 	private ArrayList<Postcode> postcodes = new ArrayList<>();
-	private StockManager stockManager = new StockManager();
+	private StockManager stockManager = new StockManager(orders);
 	private ArrayList<UpdateListener> listeners = new ArrayList<>();
 
 	private ServerCommsController commsController;
@@ -293,7 +293,7 @@ public class Server implements ServerInterface {
 
 	@Override
 	public Drone addDrone(Number speed) {
-		Drone mock = new Drone(speed);
+		Drone mock = new Drone(speed, stockManager);
 		this.drones.add(mock);
 		return mock;
 	}

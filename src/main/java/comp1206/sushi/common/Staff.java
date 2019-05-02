@@ -10,6 +10,7 @@ public class Staff extends Model implements Runnable {
 	private boolean running = true;
 	
 	public Staff(String name, StockManager stockManager) {
+		// TODO make stockmanager static
 		this.setName(name);
 		this.setFatigue(0);
 		this.stockManager = stockManager;

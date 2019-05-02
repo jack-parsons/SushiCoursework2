@@ -13,6 +13,11 @@ public class StockManager {
     private boolean restockingIngredients = true;
     private boolean restockingDishes = true;
     private Map<Dish, Number> inProgressDishes = new HashMap<>();
+    private List<Order> orders;
+
+    public StockManager(List<Order> orders) {
+        this.orders = orders;
+    }
 
     public void initStock(List<Dish> dishes) {
         for (Dish dish : dishes) {
@@ -80,5 +85,30 @@ public class StockManager {
         inProgressDishes.put(dish, inProgressDishes.getOrDefault(
                 dish, 0).doubleValue() - dish.getRestockAmount().doubleValue());
         setDishStock(dish, getDishStock(dish).intValue() + dish.getRestockAmount().intValue());
+    }
+
+    synchronized public Ingredient findIngredientToRestock() {
+        for (Ingredient ingredient : ingredientStock.keySet()) {
+            if (ingredientStock.get(ingredient).floatValue() < ingredient.getRestockThreshold().floatValue()) {
+                // If insufficient stock in reserves
+                return ingredient;
+            }
+        }
+        return null;
+    }
+
+    synchronized public Order findOrderToDeliver() {
+        for (Order order : orders) {
+            boolean suffientStock = true;
+            for (Dish dish : order.getDishQuantities().keySet()) {
+                if (dishStock.get(dish).floatValue() < order.getDishQuantities().get(dish).floatValue()) {
+                    suffientStock = false;
+                }
+            }
+            if (suffientStock) {
+                return order;
+            }
+        }
+        return null;
     }
 }
