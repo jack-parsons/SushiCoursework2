@@ -29,5 +29,9 @@ public class ServerCommsController implements Runnable {
     public ClientConnection[] getClientConnections() {
         return serverComms.toArray(new ClientConnection[0]);
     }
+
+    public void removeClientConnection(ClientConnection clientConnection) {
+        serverComms.remove(clientConnection);
+    }
 }
 

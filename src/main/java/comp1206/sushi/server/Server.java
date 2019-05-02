@@ -1,6 +1,7 @@
 package comp1206.sushi.server;
 
 import java.io.IOException;
+import java.net.SocketException;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -41,12 +42,20 @@ public class Server implements ServerInterface {
 			while(true) {
                 for (ClientConnection clientConnection : commsController.getClientConnections()) {
                     try {
-
                         if (!clientConnection.checkUpdated()) {
                             updateClient(clientConnection);
                         }
-
-                        String reply = clientConnection.receiveMessage();
+                        String reply = "";
+						try {
+							reply = clientConnection.receiveMessage();
+						} catch (SocketException e) {
+							if (clientConnection.getUser() != null)
+								System.out.println("Client disconnected: " + clientConnection.getUser().getName());
+							else
+								System.out.println("Client disconnected");
+							commsController.removeClientConnection(clientConnection);
+							continue;
+						}
                         System.out.println(reply);
                         if (reply != null && Comms.extractMessageType(reply) != null) {
                             switch (Objects.requireNonNull(Comms.extractMessageType(reply))) {
