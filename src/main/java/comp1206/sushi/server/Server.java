@@ -25,7 +25,7 @@ public class Server implements ServerInterface {
 	private ArrayList<Supplier> suppliers = new ArrayList<>();
 	private ArrayList<User> users = new ArrayList<>();
 	private ArrayList<Postcode> postcodes = new ArrayList<>();
-	private StockManager stockManager = new StockManager(orders);
+	private StockManager stockManager = new StockManager();
 	private ArrayList<UpdateListener> listeners = new ArrayList<>();
 
 	private ServerCommsController commsController;
@@ -36,103 +36,6 @@ public class Server implements ServerInterface {
 //        loadConfiguration("Configuration.txt");
 
 		commsController = new ServerCommsController();
-		new Thread(commsController).start();
-
-		new Thread(() -> {
-			while(true) {
-                for (ClientConnection clientConnection : commsController.getClientConnections()) {
-                    try {
-                        if (!clientConnection.checkUpdated()) {
-                            updateClient(clientConnection);
-                        }
-                        String reply = "";
-						try {
-							reply = clientConnection.receiveMessage();
-						} catch (SocketException e) {
-							if (clientConnection.getUser() != null)
-								System.out.println("Client disconnected: " + clientConnection.getUser().getName());
-							else
-								System.out.println("Client disconnected");
-							commsController.removeClientConnection(clientConnection);
-							continue;
-						}
-                        System.out.println(reply);
-                        if (reply != null && Comms.extractMessageType(reply) != null) {
-                            switch (Objects.requireNonNull(Comms.extractMessageType(reply))) {
-                                case REGISTER:
-                                    // Add the new user to server
-                                    String username = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.USERNAME);
-                                    String password = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.PASSWORD);
-                                    String address = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.ADDRESS);
-                                    String postcodeRaw = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.POSTCODE);
-                                    Postcode postcode = null;
-                                    for (Postcode postcode1 : postcodes) {
-                                        if(postcode1.getName().equals(postcodeRaw)) {
-                                            postcode = postcode1;
-                                        }
-                                    }
-                                    if (postcode == null) {
-                                    	throw new IllegalArgumentException("Postcode not found: " + postcodeRaw);
-									}
-                                    users.add(new User(username, password, address, postcode));
-                                case LOGIN:
-                                    for (User user : users) {
-                                        if (user.getName().equals(Comms.extractMessageAttribute(reply, Comms.MessageAttribute.USERNAME))) {
-                                        	if (user.checkPassword(Comms.extractMessageAttribute(reply, Comms.MessageAttribute.PASSWORD))) {
-												clientConnection.setUser(user);
-												clientConnection.sendMessage(String.format("NEW_USER|ADDRESS=%s|POSTCODE=%s", "", user.getPostcode()));
-											} else {
-                                        		clientConnection.sendMessage("LOGIN_REJECTED");
-											}
-                                        }
-                                    }
-                                    break;
-								case ADD_ORDER:
-									if (clientConnection.getUser() != null) {
-										String dishesRaw = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.DISHES);
-										Order order;
-										if (dishesRaw != null) {
-											Map<String, Dish> dishMap = new HashMap<>();
-											for (Dish dish : dishes)
-												dishMap.put(dish.getName(), dish);
-											order = Configuration.retrieveOrder(dishesRaw, dishMap);
-										} else
-										order = new Order();
-
-										order.setName(Comms.extractMessageAttribute(reply, Comms.MessageAttribute.NAME));
-										clientConnection.getUser().getOrders().add(order);
-										orders.add(order);
-									}
-									break;
-								case CANCEL_ORDER:
-									String orderName = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.NAME);
-									orders.removeIf(order -> order.getName().equals(orderName));
-									break;
-								case BASKET_UPDATE:
-									String dishesRaw = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.DISHES);
-									Order order;
-									if (dishesRaw != null) {
-										Map<String, Dish> dishMap = new HashMap<>();
-										for (Dish dish : dishes)
-											dishMap.put(dish.getName(), dish);
-										order = Configuration.retrieveOrder(dishesRaw, dishMap);
-										clientConnection.getUser().updateBasket(order.getDishQuantities());
-									}
-                            }
-                        }
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-		}).start();
-
-		addUpdateListener(updateEvent -> {
-            for (ClientConnection clientConnection : commsController.getClientConnections()) {
-                updateClient(clientConnection);
-            }
-        });
 		
 		Postcode restaurantPostcode = new Postcode("SO17 1BJ");
 		restaurant = new Restaurant("Mock Restaurant",restaurantPostcode);
@@ -174,6 +77,111 @@ public class Server implements ServerInterface {
 
 		startStaff();
 
+		addUpdateListener(updateEvent -> {
+			for (ClientConnection clientConnection : commsController.getClientConnections()) {
+				updateClient(clientConnection);
+			}
+		});
+
+		new Thread(commsController).start();
+
+		new Thread(() -> {
+			while(true) {
+				for (ClientConnection clientConnection : commsController.getClientConnections()) {
+					try {
+						if (!clientConnection.checkUpdated()) {
+							updateClient(clientConnection);
+						}
+						String reply = "";
+						try {
+							reply = clientConnection.receiveMessage();
+						} catch (SocketException e) {
+							if (clientConnection.getUser() != null)
+								System.out.println("Client disconnected: " + clientConnection.getUser().getName());
+							else
+								System.out.println("Client disconnected");
+							commsController.removeClientConnection(clientConnection);
+							continue;
+						}
+						System.out.println(reply);
+						if (reply != null && Comms.extractMessageType(reply) != null) {
+							switch (Objects.requireNonNull(Comms.extractMessageType(reply))) {
+								case REGISTER:
+									// Add the new user to server
+									String username = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.USERNAME);
+									String password = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.PASSWORD);
+									String address = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.ADDRESS);
+									String postcodeRaw = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.POSTCODE);
+									Postcode postcode = null;
+									for (Postcode postcodeTest : postcodes) {
+										if(postcodeTest.getName().equals(postcodeRaw)) {
+											postcode = postcodeTest;
+										}
+									}
+									if (postcode == null) {
+										throw new IllegalArgumentException("Postcode not found: " + postcodeRaw);
+									}
+									users.add(new User(username, password, address, postcode));
+								case LOGIN:
+									for (User user : users) {
+										if (user.getName().equals(Comms.extractMessageAttribute(reply, Comms.MessageAttribute.USERNAME))) {
+											if (user.checkPassword(Comms.extractMessageAttribute(reply, Comms.MessageAttribute.PASSWORD))) {
+												clientConnection.setUser(user);
+												clientConnection.sendMessage(String.format("NEW_USER|ADDRESS=%s|POSTCODE=%s", "", user.getPostcode()));
+											} else {
+												clientConnection.sendMessage("LOGIN_REJECTED");
+											}
+										}
+									}
+									break;
+								case ADD_ORDER:
+									if (clientConnection.getUser() != null) {
+										String dishesRaw = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.DISHES);
+										Order order;
+										if (dishesRaw != null) {
+											Map<String, Dish> dishMap = new HashMap<>();
+											for (Dish dish : dishes)
+												dishMap.put(dish.getName(), dish);
+											order = Configuration.retrieveOrder(dishesRaw, dishMap);
+											order.setUser(clientConnection.getUser());
+										} else {
+											order = new Order();
+										}
+
+										order.setName(Comms.extractMessageAttribute(reply, Comms.MessageAttribute.NAME));
+										clientConnection.getUser().getOrders().add(order);
+										addOrder(order);
+									}
+									break;
+								case CANCEL_ORDER:
+									String orderName = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.NAME);
+									orders.removeIf(order -> order.getName().equals(orderName));
+									break;
+								case BASKET_UPDATE:
+									String dishesRaw = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.DISHES);
+									Order order;
+									if (dishesRaw != null) {
+										Map<String, Dish> dishMap = new HashMap<>();
+										for (Dish dish : dishes)
+											dishMap.put(dish.getName(), dish);
+										order = Configuration.retrieveOrder(dishesRaw, dishMap);
+										clientConnection.getUser().updateBasket(order.getDishQuantities());
+									}
+							}
+						}
+
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}).start();
+
+	}
+
+	private void addOrder(Order order) {
+		orders.add(order);
+		stockManager.setOrders(orders);
 	}
 
 	private void updateClient(ClientConnection clientConnection) {
@@ -187,11 +195,12 @@ public class Server implements ServerInterface {
 			clientConnection.sendMessage(String.format("ADD_DISH|NAME=%s|DESCRIPTION=%s|PRICE=%s", dish.getName(), dish.getDescription(), dish.getPrice()));
 		}
 //
-		clientConnection.sendMessage("CLEAR_ORDERS");
-//		for (Order order : clientConnection.getUser().getOrders()) {
-//			for (Dish dish : order.getDishes())
-//			clientConnection.sendMessage(String.format("ADD_ORDER|DISHES=%s"));
-//		}
+		if (clientConnection.getUser() != null) {
+			clientConnection.sendMessage("CLEAR_ORDERS");
+			for (Order order : clientConnection.getUser().getOrders()) {
+				clientConnection.sendMessage(String.format("ADD_ORDER|DISHES=%s", order));
+			}
+		}
 
 		clientConnection.sendMessage(String.format("ADD_RESTAURANT|NAME=%s|POSTCODE=%s", restaurant.getName(), restaurant.getLocation()));
     }

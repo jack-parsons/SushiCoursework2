@@ -15,7 +15,7 @@ public class StockManager {
     private Map<Dish, Number> inProgressDishes = new HashMap<>();
     private List<Order> orders;
 
-    public StockManager(List<Order> orders) {
+    public void setOrders(List<Order> orders) {
         this.orders = orders;
     }
 

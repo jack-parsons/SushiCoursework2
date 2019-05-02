@@ -62,7 +62,7 @@ public class Configuration {
                             staff.put(parts[1], new Staff(parts[1], stockManager));
                             break;
                         case "DRONE":
-                            drones.put(parts[1], new Drone(Integer.parseInt(parts[1])));
+                            drones.put(parts[1], new Drone(Integer.parseInt(parts[1]), stockManager));
                             break;
                         case "ORDER":
                             orders.put(parts[1], retrieveOrder(parts[2], dishes));

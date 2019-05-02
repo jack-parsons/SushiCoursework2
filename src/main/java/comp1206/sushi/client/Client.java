@@ -25,6 +25,8 @@ public class Client implements ClientInterface {
 	public Client() {
         logger.info("Starting up client...");
 
+        postcodes.add(new Postcode(""));
+
 		try {
 			clientComms = new ClientComms();
 		} catch (ConnectException e) {
@@ -58,10 +60,22 @@ public class Client implements ClientInterface {
 						if (type != null) {
 							switch (type) {
 								case CLEAR_POSTCODES:
-									postcodes.clear();
+//									postcodes.clear();
 									break;
 								case ADD_POSTCODE:
-									postcodes.add(new Postcode(Comms.extractMessageAttribute(message, Comms.MessageAttribute.POSTCODE)));
+									String name = Comms.extractMessageAttribute(message, Comms.MessageAttribute.POSTCODE);
+									// Check that postcode is not already added
+									Iterator<Postcode> postcodeIterator = postcodes.iterator();
+									while (postcodeIterator.hasNext()) {
+										Postcode curPostcode = postcodeIterator.next();
+										if (curPostcode.getName().equals(name)) {
+											break;
+										} else if (curPostcode.getName().equals("")) {
+											// Remove placeholder postcode
+											postcodeIterator.remove();
+										}
+									}
+									postcodes.add(new Postcode(name));
 									break;
 								case CLEAR_DISHES:
 									dishes.clear();
@@ -193,12 +207,12 @@ public class Client implements ClientInterface {
 	@Override
 	public void updateDishInBasket(User user, Dish dish, Number quantity) {
 		user.updateDishInBasket(dish, quantity);
-		clientComms.sendMessage(String.format("BASKET_UPDATE|DISHES=%s", new Order(user.getBasket())));
+		clientComms.sendMessage(String.format("BASKET_UPDATE|DISHES=%s", new Order(user.getBasket(), user)));
 	}
 
 	@Override
 	public Order checkoutBasket(User user) {
-		Order basket = new Order(user.getBasket());
+		Order basket = new Order(user.getBasket(), user);
 		clientComms.sendMessage(String.format("ADD_ORDER|NAME=%s|DISHES=%s", basket.getName(), basket));
 		user.getOrders().add(basket);
 		return basket;
@@ -243,7 +257,11 @@ public class Client implements ClientInterface {
 
 	@Override
 	public void notifyUpdate() {
-		this.listeners.forEach(listener -> listener.updated(new UpdateEvent()));
+		try {
+			this.listeners.forEach(listener -> listener.updated(new UpdateEvent()));
+		} catch (NullPointerException e) {
+			e.printStackTrace();
+		}
 	}
 
 }

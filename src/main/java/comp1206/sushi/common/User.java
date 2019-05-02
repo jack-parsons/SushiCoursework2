@@ -57,7 +57,7 @@ public class User extends Model {
 	}
 
 	public Number getBasketCost() {
-		return new Order(basket).getOrderCost();  // Create temp order and calculate price with it
+		return new Order(basket, this).getOrderCost();  // Create temp order and calculate price with it
 	}
 
 	public void updateBasket(Map<Dish, Number> basket) {

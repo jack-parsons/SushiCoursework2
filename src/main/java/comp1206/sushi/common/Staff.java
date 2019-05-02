@@ -14,6 +14,7 @@ public class Staff extends Model implements Runnable {
 		this.setName(name);
 		this.setFatigue(0);
 		this.stockManager = stockManager;
+		setStatus("Idle");
 	}
 
 	public String getName() {

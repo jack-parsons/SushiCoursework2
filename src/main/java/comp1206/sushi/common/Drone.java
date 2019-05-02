@@ -113,7 +113,7 @@ public class Drone extends Model implements Runnable {
 				} else {
 					Order orderToDeliver = stockManager.findOrderToDeliver();
 					if (orderToDeliver != null) {
-						setDestination(orderToDeliver.get().getPostcode());
+//						setDestination(orderToDeliver.g.getPostcode());
 						addCargo(ingredientToRestock, Math.min(ingredientToRestock.getRestockAmount().floatValue(), capacityRemaining().floatValue()));
 						progress = 0;
 					}

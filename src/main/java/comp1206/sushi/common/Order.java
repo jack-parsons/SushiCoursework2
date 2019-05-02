@@ -12,18 +12,35 @@ public class Order extends Model {
 
 	private String status;
 	private Map<Dish, Number> dishes = new HashMap<>();
-	
+	private User user;
+
 	public Order() {
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/YYYY HH:mm:ss");
+		LocalDateTime now = LocalDateTime.now();
+		this.name = dtf.format(now);
+	}
+	
+	public Order(User user) {
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/YYYY HH:mm:ss");  
 		LocalDateTime now = LocalDateTime.now();  
 		this.name = dtf.format(now);
+		this.user = user;
 	}
 
-	public Order(Map<Dish, Number> dishes) {
+	public Order(Map<Dish, Number> dishes, User user) {
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/YYYY HH:mm:ss");
 		LocalDateTime now = LocalDateTime.now();
 		this.name = dtf.format(now);
 		this.dishes = dishes;
+		this.user = user;
+	}
+
+	public void setUser(User user) {
+		this.user = user;
+	}
+
+	public User getUser() {
+		return user;
 	}
 
 	public void addDish(Dish dish, Number quantity) {
