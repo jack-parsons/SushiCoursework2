@@ -13,7 +13,7 @@ public class Order extends Model {
 	private String status;
 	private Map<Dish, Number> dishes = new HashMap<>();
 	private User user;
-	private boolean isComplete = false;
+	private boolean isComplete = false, isBeingDelivered = false;
 
 //	public Order() {
 //		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/YYYY HH:mm:ss");
@@ -36,9 +36,19 @@ public class Order extends Model {
 		this.user = user;
 	}
 
+	public void startDelivery() {
+		setStatus("Being delivered");
+		isBeingDelivered = true;
+	}
+
 	public void deliverOrder() {
 		setStatus("Delivered");
+		isBeingDelivered = false;
 		isComplete = true;
+	}
+
+	public boolean isBeingDelivered() {
+		return isBeingDelivered;
 	}
 
 	public boolean isComplete() {

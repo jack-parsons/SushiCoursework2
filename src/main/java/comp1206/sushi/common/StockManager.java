@@ -13,6 +13,7 @@ public class StockManager {
     private boolean restockingIngredients = true;
     private boolean restockingDishes = true;
     private Map<Dish, Number> inProgressDishes = new HashMap<>();
+    private Map<Ingredient, Number> inTransitIngredients = new HashMap<>();
     private List<Order> orders = new ArrayList<>();
 
     public void setOrders(List<Order> orders) {
@@ -59,6 +60,7 @@ public class StockManager {
      * @return A dish that needs restocking if any, else null
      */
     synchronized public Dish findDishToPrepare() {
+        System.out.println(dishStock);
         for (Dish dish : dishStock.keySet()) {
             if (dishStock.get(dish).doubleValue() + inProgressDishes.getOrDefault(dish, 0).doubleValue() <
                     dish.getRestockThreshold().doubleValue()) {
@@ -88,28 +90,38 @@ public class StockManager {
         setDishStock(dish, getDishStock(dish).intValue() + dish.getRestockAmount().intValue());
     }
 
-    synchronized public Ingredient findIngredientToRestock() {
+    synchronized public Ingredient findIngredientToRestock(Number capacityLeft) {
         for (Ingredient ingredient : ingredientStock.keySet()) {
-            System.out.println(ingredient.getName());
-            if (ingredientStock.get(ingredient).floatValue() < ingredient.getRestockThreshold().floatValue()) {
-                // If insufficient stock in reserves
-                System.out.println("yes");
+            if (ingredientStock.get(ingredient).floatValue() + inTransitIngredients.getOrDefault(ingredient, 0).floatValue() < ingredient.getRestockThreshold().floatValue()) {
+                // If insufficient stock in reserves then produce more
+                informRestockingIngredient(ingredient, Math.min(capacityLeft.floatValue(), ingredient.getRestockAmount().floatValue()));
                 return ingredient;
             }
         }
         return null;
     }
 
+    synchronized public void informRestockingIngredient(Ingredient ingredient, Number quantity) {
+        inTransitIngredients.put(ingredient, quantity.floatValue() + inTransitIngredients.getOrDefault(ingredient, 0).floatValue());
+    }
+
+    synchronized public void informDeliveryCompleted(Ingredient ingredient, Number quantity) {
+        inTransitIngredients.put(ingredient, inTransitIngredients.getOrDefault(ingredient, 0).floatValue() - quantity.floatValue());
+    }
+
     synchronized public Order findOrderToDeliver() {
         for (Order order : orders) {
-            boolean suffientStock = true;
-            for (Dish dish : order.getDishQuantities().keySet()) {
-                if (dishStock.get(dish).floatValue() < order.getDishQuantities().get(dish).floatValue()) {
-                    suffientStock = false;
+            if (!order.isComplete() && !order.isBeingDelivered()) {
+                boolean suffientStock = true;
+                for (Dish dish : order.getDishQuantities().keySet()) {
+                    if (dishStock.get(dish).floatValue() < order.getDishQuantities().get(dish).floatValue()) {
+                        suffientStock = false;
+                    }
                 }
-            }
-            if (suffientStock) {
-                return order;
+                if (suffientStock) {
+                    order.startDelivery();
+                    return order;
+                }
             }
         }
         return null;

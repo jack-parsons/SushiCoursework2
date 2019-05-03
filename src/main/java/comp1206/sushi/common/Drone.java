@@ -82,7 +82,8 @@ public class Drone extends Model implements Runnable {
 	}
 
 	public Number getCapacity() {
-		return capacity;
+		// TODO replace with actual capacity if needed
+		return Integer.MAX_VALUE;
 	}
 
 	public void setCapacity(Number capacity) {
@@ -121,11 +122,12 @@ public class Drone extends Model implements Runnable {
 			}
 			if (progress == null) {
 				// If the drone is at restaurant idle
-				Ingredient ingredientToRestock = stockManager.findIngredientToRestock();
+				Ingredient ingredientToRestock = stockManager.findIngredientToRestock(capacityRemaining());
 				if (ingredientToRestock != null) {
 					// If there is an ingredient to restock
 					setDestination(ingredientToRestock.getSupplier().getPostcode());
-					addCargo(ingredientToRestock, Math.min(ingredientToRestock.getRestockAmount().floatValue(), capacityRemaining().floatValue()));
+					float amountRestock = Math.min(ingredientToRestock.getRestockAmount().floatValue(), capacityRemaining().floatValue());
+					addCargo(ingredientToRestock, amountRestock);
 					progress = 0;
 					setStatus("Flying to supplier for ingredient: " + ingredientToRestock.getName());
 				} else {
@@ -151,14 +153,13 @@ public class Drone extends Model implements Runnable {
 						progress = null;
 					} else {
 						// Transfer cargo
-						System.out.println("transfering");
 						for (Model item : cargo.keySet()) {
 							System.out.println(item.name);
 							if (item instanceof Order) {
 								((Order) item).deliverOrder();
 							} else if (item instanceof Ingredient) {
-								System.out.println(stockManager.getIngredientsStock((Ingredient)item).floatValue() + cargo.get(item).floatValue());
 								stockManager.setIngredientsStock((Ingredient)item, stockManager.getIngredientsStock((Ingredient)item).floatValue() + cargo.get(item).floatValue());
+								stockManager.informDeliveryCompleted((Ingredient) item, cargo.getOrDefault(item, 0));
 							} else {
 								throw new IllegalArgumentException("Invalid model given to drone cargo");
 							}

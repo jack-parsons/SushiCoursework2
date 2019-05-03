@@ -71,13 +71,10 @@ public class Server implements ServerInterface {
 		addStaff("Staff 2");
 		addStaff("Staff 3");
 
-		addDrone(1);
-		addDrone(2);
-		addDrone(3);
+		addDrone(20);
+		addDrone(15);
+		addDrone(10);
 		addDrone(30);
-
-		startStaff();
-		startDrones();
 
 		addUpdateListener(updateEvent -> {
 			for (ClientConnection clientConnection : commsController.getClientConnections()) {
@@ -311,6 +308,7 @@ public class Server implements ServerInterface {
 	public Drone addDrone(Number speed) {
 		Drone mock = new Drone(speed, stockManager, restaurant);
 		this.drones.add(mock);
+		new Thread(mock).start();
 		return mock;
 	}
 
@@ -330,6 +328,7 @@ public class Server implements ServerInterface {
 	public Staff addStaff(String name) {
 		Staff mock = new Staff(name, stockManager);
 		this.staff.add(mock);
+		new Thread(mock).start();
 		return mock;
 	}
 
@@ -445,24 +444,9 @@ public class Server implements ServerInterface {
 		drones = config.getDrones();
 		orders = config.getOrders();
 		stockManager = config.getStockManager();
-
-		startStaff();
-		startDrones();
 		stockManager.initStock(dishes);
 
 		System.out.println("Loaded configuration: " + filename);
-	}
-
-	private void startStaff() {
-		for (Staff s : staff) {
-			new Thread(s).start();
-		}
-	}
-
-	private void startDrones() {
-		for (Drone drone : drones) {
-			new Thread(drone).start();
-		}
 	}
 
 	@Override
