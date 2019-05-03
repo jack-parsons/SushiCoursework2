@@ -76,6 +76,11 @@ public class StockManager {
                 if (hasStock) {
                     inProgressDishes.put(dish, inProgressDishes.getOrDefault(
                             dish, 0).doubleValue() + dish.getRestockAmount().doubleValue());
+                    for (Ingredient ingredient : dish.getRecipe().keySet()) {
+                        //TODO fix negative stocks
+                        Number amountBeingPrepared = inProgressDishes.getOrDefault(dish, 0);
+                        ingredientStock.put(ingredient, ingredientStock.getOrDefault(ingredient, 0).floatValue() - dish.getRecipe().get(ingredient).doubleValue() * dish.getRestockAmount().doubleValue() - amountBeingPrepared.doubleValue());
+                    }
                     return dish;
                 }
             }
