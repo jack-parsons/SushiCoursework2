@@ -50,13 +50,13 @@ public class Server implements ServerInterface {
 		Supplier supplier2 = addSupplier("Supplier 2",postcode2);
 		Supplier supplier3 = addSupplier("Supplier 3",postcode3);
 
-		Ingredient ingredient1 = addIngredient("Ingredient 1","grams",supplier1,1,5,1);
-		Ingredient ingredient2 = addIngredient("Ingredient 2","grams",supplier2,1,5,1);
-		Ingredient ingredient3 = addIngredient("Ingredient 3","grams",supplier3,1,5,1);
+		Ingredient ingredient1 = addIngredient("Ingredient 1","grams",supplier1,20,5,1);
+		Ingredient ingredient2 = addIngredient("Ingredient 2","grams",supplier2,20,5,1);
+		Ingredient ingredient3 = addIngredient("Ingredient 3","grams",supplier3,20,5,1);
 
-		Dish dish1 = addDish("Dish 1","Dish 1",1,1,10);
-		Dish dish2 = addDish("Dish 2","Dish 2",2,1,10);
-		Dish dish3 = addDish("Dish 3","Dish 3",3,1,10);
+		Dish dish1 = addDish("Dish 1","Dish 1",1,1,3);
+		Dish dish2 = addDish("Dish 2","Dish 2",2,1,3);
+		Dish dish3 = addDish("Dish 3","Dish 3",3,1,3);
 
 //		orders.add(new Order());
 

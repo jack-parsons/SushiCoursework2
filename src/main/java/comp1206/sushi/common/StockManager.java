@@ -60,7 +60,6 @@ public class StockManager {
      * @return A dish that needs restocking if any, else null
      */
     synchronized public Dish findDishToPrepare() {
-        System.out.println(dishStock);
         for (Dish dish : dishStock.keySet()) {
             if (dishStock.get(dish).doubleValue() + inProgressDishes.getOrDefault(dish, 0).doubleValue() <
                     dish.getRestockThreshold().doubleValue()) {
@@ -70,7 +69,7 @@ public class StockManager {
                     // If the amount required is greater than the amount in stock and being prepared
                     Number amountBeingPrepared = inProgressDishes.getOrDefault(dish, 0);
                     if (dish.getRecipe().get(ingredient).doubleValue() * dish.getRestockAmount().doubleValue()
-                            > ingredientStock.get(ingredient).doubleValue() + amountBeingPrepared.doubleValue()) {
+                            >= ingredientStock.get(ingredient).doubleValue() + amountBeingPrepared.doubleValue()) {
                         hasStock = false;
                     }
                 }

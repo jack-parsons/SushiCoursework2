@@ -154,7 +154,6 @@ public class Drone extends Model implements Runnable {
 					} else {
 						// Transfer cargo
 						for (Model item : cargo.keySet()) {
-							System.out.println(item.name);
 							if (item instanceof Order) {
 								((Order) item).deliverOrder();
 							} else if (item instanceof Ingredient) {
