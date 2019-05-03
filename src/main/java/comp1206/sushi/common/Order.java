@@ -14,11 +14,11 @@ public class Order extends Model {
 	private Map<Dish, Number> dishes = new HashMap<>();
 	private User user;
 
-	public Order() {
-		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/YYYY HH:mm:ss");
-		LocalDateTime now = LocalDateTime.now();
-		this.name = dtf.format(now);
-	}
+//	public Order() {
+//		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/YYYY HH:mm:ss");
+//		LocalDateTime now = LocalDateTime.now();
+//		this.name = dtf.format(now);
+//	}
 	
 	public Order(User user) {
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/YYYY HH:mm:ss");  

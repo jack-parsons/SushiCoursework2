@@ -13,7 +13,7 @@ public class StockManager {
     private boolean restockingIngredients = true;
     private boolean restockingDishes = true;
     private Map<Dish, Number> inProgressDishes = new HashMap<>();
-    private List<Order> orders;
+    private List<Order> orders = new ArrayList<>();
 
     public void setOrders(List<Order> orders) {
         this.orders = orders;
@@ -89,8 +89,10 @@ public class StockManager {
 
     synchronized public Ingredient findIngredientToRestock() {
         for (Ingredient ingredient : ingredientStock.keySet()) {
+            System.out.println(ingredient.getName());
             if (ingredientStock.get(ingredient).floatValue() < ingredient.getRestockThreshold().floatValue()) {
                 // If insufficient stock in reserves
+                System.out.println("yes");
                 return ingredient;
             }
         }

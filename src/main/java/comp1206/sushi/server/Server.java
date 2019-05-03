@@ -58,7 +58,7 @@ public class Server implements ServerInterface {
 		Dish dish2 = addDish("Dish 2","Dish 2",2,1,10);
 		Dish dish3 = addDish("Dish 3","Dish 3",3,1,10);
 
-		orders.add(new Order());
+//		orders.add(new Order());
 
 		addIngredientToDish(dish1,ingredient1,1);
 		addIngredientToDish(dish1,ingredient2,2);
@@ -74,13 +74,16 @@ public class Server implements ServerInterface {
 		addDrone(1);
 		addDrone(2);
 		addDrone(3);
+		addDrone(30);
 
 		startStaff();
+		startDrones();
 
 		addUpdateListener(updateEvent -> {
 			for (ClientConnection clientConnection : commsController.getClientConnections()) {
 				updateClient(clientConnection);
 			}
+			stockManager.setOrders(orders);
 		});
 
 		new Thread(commsController).start();
@@ -143,10 +146,10 @@ public class Server implements ServerInterface {
 											Map<String, Dish> dishMap = new HashMap<>();
 											for (Dish dish : dishes)
 												dishMap.put(dish.getName(), dish);
-											order = Configuration.retrieveOrder(dishesRaw, dishMap);
+											order = Configuration.retrieveOrder(clientConnection.getUser(), dishesRaw, dishMap);
 											order.setUser(clientConnection.getUser());
 										} else {
-											order = new Order();
+											order = new Order(clientConnection.getUser());
 										}
 
 										order.setName(Comms.extractMessageAttribute(reply, Comms.MessageAttribute.NAME));
@@ -165,7 +168,7 @@ public class Server implements ServerInterface {
 										Map<String, Dish> dishMap = new HashMap<>();
 										for (Dish dish : dishes)
 											dishMap.put(dish.getName(), dish);
-										order = Configuration.retrieveOrder(dishesRaw, dishMap);
+										order = Configuration.retrieveOrder(clientConnection.getUser(), dishesRaw, dishMap);
 										clientConnection.getUser().updateBasket(order.getDishQuantities());
 									}
 							}
@@ -216,6 +219,7 @@ public class Server implements ServerInterface {
 		Dish newDish = new Dish(name,description,price,restockThreshold,restockAmount);
 		this.dishes.add(newDish);
 		this.notifyUpdate();
+		stockManager.setDishStock(newDish, 0);
 		return newDish;
 	}
 	
@@ -223,6 +227,7 @@ public class Server implements ServerInterface {
 	public void removeDish(Dish dish) {
 		this.dishes.remove(dish);
 		this.notifyUpdate();
+		// TODO deal with stock manager stock when removed
 	}
 
 	@Override
@@ -268,6 +273,7 @@ public class Server implements ServerInterface {
 		Ingredient mockIngredient = new Ingredient(name,unit,supplier,restockThreshold,restockAmount,weight);
 		this.ingredients.add(mockIngredient);
 		this.notifyUpdate();
+		stockManager.setIngredientsStock(mockIngredient, 0);
 		return mockIngredient;
 	}
 
@@ -303,13 +309,14 @@ public class Server implements ServerInterface {
 
 	@Override
 	public Drone addDrone(Number speed) {
-		Drone mock = new Drone(speed, stockManager);
+		Drone mock = new Drone(speed, stockManager, restaurant);
 		this.drones.add(mock);
 		return mock;
 	}
 
 	@Override
 	public void removeDrone(Drone drone) {
+		// TODO stop deletion if in use
 		this.drones.remove(drone);
 		this.notifyUpdate();
 	}
@@ -440,6 +447,7 @@ public class Server implements ServerInterface {
 		stockManager = config.getStockManager();
 
 		startStaff();
+		startDrones();
 		stockManager.initStock(dishes);
 
 		System.out.println("Loaded configuration: " + filename);
@@ -448,6 +456,12 @@ public class Server implements ServerInterface {
 	private void startStaff() {
 		for (Staff s : staff) {
 			new Thread(s).start();
+		}
+	}
+
+	private void startDrones() {
+		for (Drone drone : drones) {
+			new Thread(drone).start();
 		}
 	}
 
@@ -466,32 +480,17 @@ public class Server implements ServerInterface {
 
 	@Override
 	public String getOrderStatus(Order order) {
-		Random rand = new Random();
-		if(rand.nextBoolean()) {
-			return "Complete";
-		} else {
-			return "Pending";
-		}
+		return order.getStatus();
 	}
 	
 	@Override
 	public String getDroneStatus(Drone drone) {
-		Random rand = new Random();
-		if(rand.nextBoolean()) {
-			return "Idle";
-		} else {
-			return "Flying";
-		}
+		return drone.getStatus();
 	}
 	
 	@Override
 	public String getStaffStatus(Staff staff) {
-		Random rand = new Random();
-		if(rand.nextBoolean()) {
-			return "Idle";
-		} else {
-			return "Working";
-		}
+		return staff.getStatus();
 	}
 
 	@Override

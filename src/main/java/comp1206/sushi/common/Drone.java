@@ -8,7 +8,7 @@ import java.util.Map;
 public class Drone extends Model implements Runnable {
 
 	private Number speed;
-	private Number progress;
+	private Number progress = null;
 	
 	private Number capacity;
 	private Number battery;
@@ -25,11 +25,22 @@ public class Drone extends Model implements Runnable {
 
 	private long lastT;
 
-	public Drone(Number speed, StockManager stockManager) {
+//	public Drone(Number speed, StockManager stockManager) {
+//		this.setSpeed(speed);
+//		this.setCapacity(1);
+//		this.setBattery(100);
+//		this.stockManager = stockManager;
+//		setStatus("Idle");
+//	}
+
+	public Drone(Number speed, StockManager stockManager, Restaurant restaurant) {
 		this.setSpeed(speed);
 		this.setCapacity(1);
 		this.setBattery(100);
 		this.stockManager = stockManager;
+		setStatus("Idle");
+		this.restaurant = restaurant;
+		setSource(restaurant.getLocation());
 	}
 
 	public Number getSpeed() {
@@ -108,7 +119,8 @@ public class Drone extends Model implements Runnable {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			if (status.contains("Idle") || status.equals("")) {
+			if (progress == null) {
+				// If the drone is at restaurant idle
 				Ingredient ingredientToRestock = stockManager.findIngredientToRestock();
 				if (ingredientToRestock != null) {
 					// If there is an ingredient to restock
@@ -128,8 +140,8 @@ public class Drone extends Model implements Runnable {
 			} else {
 				if (progress.floatValue() < 100) {
 					// If the drone has not yet reached its destination and is in transit
-					progress = progress.floatValue() + (((System.currentTimeMillis() - lastT) / 1000 * getSpeed().floatValue()) /
-							(getSource().calculateDistance(getDestination()) / 1000)) * 100;
+					progress = progress.floatValue() + (((System.currentTimeMillis() - lastT) / 1000.0 * getSpeed().floatValue()) /
+							(getSource().calculateDistance(getDestination()) * 1000.0)) * 100;
 				} else {
 					// If the drone has arrived at its destination
 					if (destination.equals(restaurant.getLocation())) {
@@ -142,6 +154,7 @@ public class Drone extends Model implements Runnable {
 						setSource(destination);
 						setDestination(restaurant.getLocation());
 						progress = 0;
+						setStatus("Returning to restaurant");
 					}
 				}
 			}

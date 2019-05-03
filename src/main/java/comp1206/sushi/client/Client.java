@@ -7,6 +7,7 @@ import java.util.*;
 
 import comp1206.sushi.common.*;
 import comp1206.sushi.common.Comms;
+import comp1206.sushi.server.ClientConnection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -37,7 +38,7 @@ public class Client implements ClientInterface {
                 try {
                 	if (clientComms != null && finishedInit) {
 						String message = clientComms.receiveMessageWait();
-						processMessage(message);
+						processMessage(message, user);
 					}
 				} catch (SocketException e) {
                     // Start trying to reconnect to server
@@ -51,7 +52,7 @@ public class Client implements ClientInterface {
         }).start();
 	}
 
-	private void processMessage(String message) {
+	private void processMessage(String message, User user) {
 		System.out.println(message);
 		Comms.MessageType type = Comms.extractMessageType(message);
 		if (type != null) {
@@ -104,9 +105,9 @@ public class Client implements ClientInterface {
 							Map<String, Dish> dishMap = new HashMap<>();
 							for (Dish dish : dishes)
 								dishMap.put(dish.getName(), dish);
-							order = Configuration.retrieveOrder(dishesRaw, dishMap);
+							order = Configuration.retrieveOrder(user, dishesRaw, dishMap);
 						} else
-							order = new Order();
+							order = new Order(user);
 
 						order.setName(Comms.extractMessageAttribute(message, Comms.MessageAttribute.NAME));
 						user.getOrders().add(order);
@@ -127,7 +128,7 @@ public class Client implements ClientInterface {
             while (!finishedInit) {
 
 				String message = clientComms.receiveMessageWait();
-				processMessage(message);
+				processMessage(message, user);
 			}
         } catch (ConnectException e) {
             // Keep trying to connect
@@ -138,7 +139,7 @@ public class Client implements ClientInterface {
                         finishedInit = false;
 						while (!finishedInit) {
 							String message = clientComms.receiveMessageWait();
-							processMessage(message);
+							processMessage(message, user);
 						}
                         System.out.println("Connection to server successful");
                         break;

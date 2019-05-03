@@ -62,10 +62,10 @@ public class Configuration {
                             staff.put(parts[1], new Staff(parts[1], stockManager));
                             break;
                         case "DRONE":
-                            drones.put(parts[1], new Drone(Integer.parseInt(parts[1]), stockManager));
+                            drones.put(parts[1], new Drone(Integer.parseInt(parts[1]), stockManager, restaurant));
                             break;
                         case "ORDER":
-                            orders.put(parts[1], retrieveOrder(parts[2], dishes));
+                            orders.put(parts[1], retrieveOrder(users.get(parts[1]), parts[2], dishes));
                             break;
                         case "STOCK":
                             if (dishes.containsKey(parts[1])) {
@@ -84,9 +84,8 @@ public class Configuration {
         }
     }
 
-    public static Order retrieveOrder(String rawString, Map<String, Dish> dishes) {
-
-        Order order = new Order();
+    public static Order retrieveOrder(User user, String rawString, Map<String, Dish> dishes) {
+        Order order = new Order(user);
         for (String dish : rawString.split(",")) {
             String[] dishParts = dish.split("\\*");
             order.addDish(dishes.get(dishParts[1].trim()), Integer.parseInt(dishParts[0].trim()));
