@@ -92,6 +92,7 @@ public class ClientWindow extends JFrame implements UpdateListener {
 	@Override
 	public void updated(UpdateEvent updateEvent) {
 		//When the client backend updates, update the basket, dishes and current orders
+		System.out.println(menuPanel);
 		menuPanel.refreshBasket();
 		menuPanel.refreshDishes();
 		orderPanel.refreshOrders();

@@ -20,7 +20,6 @@ public class Client implements ClientInterface {
     private List<Dish> dishes = new ArrayList<>();
 
     private User user;
-    private boolean finishedInitialising = false;
 
     private ClientComms clientComms;
 	
@@ -59,7 +58,6 @@ public class Client implements ClientInterface {
 										}
 									}
 									postcodes.add(new Postcode(name));
-                                    finishedInitialising = true;
 									break;
 								case CLEAR_DISHES:
 									dishes.clear();
@@ -100,7 +98,7 @@ public class Client implements ClientInterface {
 									}
 									break;
 							}
-							notifyUpdate();
+//							notifyUpdate();
 						} else {
 							throw new IllegalArgumentException("Type of message not found: " + message);
 						}
@@ -269,13 +267,7 @@ public class Client implements ClientInterface {
 
 	@Override
 	public void notifyUpdate() {
-		try {
-		    if (finishedInitialising) {
-                this.listeners.forEach(listener -> listener.updated(new UpdateEvent()));
-            }
-		} catch (NullPointerException e) {
-			e.printStackTrace();
-		}
+		this.listeners.forEach(listener -> listener.updated(new UpdateEvent()));
 	}
 
 }
