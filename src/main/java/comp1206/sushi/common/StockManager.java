@@ -42,6 +42,7 @@ public class StockManager {
     }
 
     public Number setIngredientsStock(Ingredient dish, Number quantity) {
+        System.out.println(quantity);
         return ingredientStock.put(dish, quantity);
     }
 

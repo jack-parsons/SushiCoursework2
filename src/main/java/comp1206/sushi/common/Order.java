@@ -13,6 +13,7 @@ public class Order extends Model {
 	private String status;
 	private Map<Dish, Number> dishes = new HashMap<>();
 	private User user;
+	private boolean isComplete = false;
 
 //	public Order() {
 //		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/YYYY HH:mm:ss");
@@ -33,6 +34,15 @@ public class Order extends Model {
 		this.name = dtf.format(now);
 		this.dishes = dishes;
 		this.user = user;
+	}
+
+	public void deliverOrder() {
+		setStatus("Delivered");
+		isComplete = true;
+	}
+
+	public boolean isComplete() {
+		return isComplete;
 	}
 
 	public void setUser(User user) {

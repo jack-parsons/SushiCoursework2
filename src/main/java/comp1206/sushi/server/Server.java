@@ -475,7 +475,7 @@ public class Server implements ServerInterface {
 
 	@Override
 	public boolean isOrderComplete(Order order) {
-		return true;
+		return order.isComplete();
 	}
 
 	@Override

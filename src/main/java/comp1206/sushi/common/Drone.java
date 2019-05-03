@@ -150,6 +150,21 @@ public class Drone extends Model implements Runnable {
 						setStatus("Idle");
 						progress = null;
 					} else {
+						// Transfer cargo
+						System.out.println("transfering");
+						for (Model item : cargo.keySet()) {
+							System.out.println(item.name);
+							if (item instanceof Order) {
+								((Order) item).deliverOrder();
+							} else if (item instanceof Ingredient) {
+								System.out.println(stockManager.getIngredientsStock((Ingredient)item).floatValue() + cargo.get(item).floatValue());
+								stockManager.setIngredientsStock((Ingredient)item, stockManager.getIngredientsStock((Ingredient)item).floatValue() + cargo.get(item).floatValue());
+							} else {
+								throw new IllegalArgumentException("Invalid model given to drone cargo");
+							}
+						}
+						cargo.clear();
+
 						// If the drone's destination was not the restaurant, then return to restaurant
 						setSource(destination);
 						setDestination(restaurant.getLocation());
@@ -180,12 +195,11 @@ public class Drone extends Model implements Runnable {
 	 * @param quantity The quantity to add
 	 * @return Whether the quantity fitted
 	 */
-	public boolean addCargo(Model item, Number quantity) {
-		if (quantity.floatValue() + cargoCarrying().floatValue() < getCapacity().floatValue()) {
+	public void addCargo(Model item, Number quantity) {
+		if (quantity.floatValue() + cargoCarrying().floatValue() <= getCapacity().floatValue()) {
 			cargo.put(item, quantity.floatValue() + cargo.getOrDefault(item, 0).floatValue());
-			return true;
 		} else {
-			return false;
+			throw new IllegalArgumentException("Not enough space in drone capacity: " + quantity);
 		}
 	}
 }
