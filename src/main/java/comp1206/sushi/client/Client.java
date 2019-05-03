@@ -135,6 +135,11 @@ public class Client implements ClientInterface {
                 while (true) {
                     try {
                         clientComms = new ClientComms();
+                        finishedInit = false;
+						while (!finishedInit) {
+							String message = clientComms.receiveMessageWait();
+							processMessage(message);
+						}
                         System.out.println("Connection to server successful");
                         break;
                     } catch (ConnectException ignored) {

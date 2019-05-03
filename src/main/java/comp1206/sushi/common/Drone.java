@@ -21,6 +21,7 @@ public class Drone extends Model implements Runnable {
 	private Map<Model, Number> cargo = new HashMap<>();
 	private boolean running = true;
 	private StockManager stockManager;
+	private Restaurant restaurant;
 
 	private long lastT;
 
@@ -94,6 +95,10 @@ public class Drone extends Model implements Runnable {
 		this.status = status;
 	}
 
+	public void setRestaurant(Restaurant restaurant) {
+		this.restaurant = restaurant;
+	}
+
 	@Override
 	public void run() {
 		lastT = System.currentTimeMillis();
@@ -110,22 +115,34 @@ public class Drone extends Model implements Runnable {
 					setDestination(ingredientToRestock.getSupplier().getPostcode());
 					addCargo(ingredientToRestock, Math.min(ingredientToRestock.getRestockAmount().floatValue(), capacityRemaining().floatValue()));
 					progress = 0;
+					setStatus("Flying to supplier for ingredient: " + ingredientToRestock.getName());
 				} else {
 					Order orderToDeliver = stockManager.findOrderToDeliver();
 					if (orderToDeliver != null) {
-//						setDestination(orderToDeliver.g.getPostcode());
-						addCargo(ingredientToRestock, Math.min(ingredientToRestock.getRestockAmount().floatValue(), capacityRemaining().floatValue()));
+						setDestination(orderToDeliver.getUser().getPostcode());
+						addCargo(orderToDeliver, Math.min(ingredientToRestock.getRestockAmount().floatValue(), capacityRemaining().floatValue()));
 						progress = 0;
+						setStatus(String.format("Flying to user: %s for order: %s", orderToDeliver.getUser().getName(), orderToDeliver.getName()));
 					}
 				}
 			} else {
 				if (progress.floatValue() < 100) {
-					progress = progress.floatValue() + ((System.currentTimeMillis() - lastT) / 1000 * getSpeed().floatValue()) /
-							(getSource().calculateDistance(getDestination()) / 1000);
+					// If the drone has not yet reached its destination and is in transit
+					progress = progress.floatValue() + (((System.currentTimeMillis() - lastT) / 1000 * getSpeed().floatValue()) /
+							(getSource().calculateDistance(getDestination()) / 1000)) * 100;
 				} else {
-					setSource(destination);
-					setStatus("Idle");
-					progress = null;
+					// If the drone has arrived at its destination
+					if (destination.equals(restaurant.getLocation())) {
+						// If the drone's destination was the restaurant go idle
+						setSource(destination);
+						setStatus("Idle");
+						progress = null;
+					} else {
+						// If the drone's destination was not the restaurant, then return to restaurant
+						setSource(destination);
+						setDestination(restaurant.getLocation());
+						progress = 0;
+					}
 				}
 			}
 			lastT = System.currentTimeMillis();
