@@ -52,7 +52,6 @@ public class Postcode extends Model {
 	}
 	
 	public double calculateDistance(Postcode destination) {
-		 		//This function needs implementing
 		 		double distance = 0;
 		 		if (this.isValidPostcode() && destination.isValidPostcode()) {
 			 			double diffLat = Math.toRadians(getLatLong().get("lat") - destination.getLatLong().get("lat"));
@@ -73,7 +72,7 @@ public class Postcode extends Model {
 		 	} 
 
 		 	protected void calculateLatLong() {
-		 		//This function needs implementing 
+
 		 		this.latLong = new HashMap<String,Double>();
 		 		try {
 			 			URL postCodeAPI = new URL(String.format("https://www.southampton.ac.uk/~ob1a12/postcode/postcode.php?postcode=%s", name.replace(" ", "")));

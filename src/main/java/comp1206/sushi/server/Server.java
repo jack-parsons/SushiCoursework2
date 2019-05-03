@@ -91,6 +91,7 @@ public class Server implements ServerInterface {
 					try {
 						if (!clientConnection.checkUpdated()) {
 							updateClient(clientConnection);
+							clientConnection.sendMessage(Comms.MessageType.FINISH_INIT.name());
 						}
 						String reply = "";
 						try {

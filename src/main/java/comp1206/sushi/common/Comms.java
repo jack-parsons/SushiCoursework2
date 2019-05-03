@@ -24,7 +24,8 @@ public abstract class Comms {
         CANCEL_ORDER("CANCEL_ORDER"),
         ADD_ORDER("ADD_ORDER"),
         LOGIN_REJECTED("LOGIN_REJECTED"),
-        BASKET_UPDATE("BASKET_UPDATE");
+        BASKET_UPDATE("BASKET_UPDATE"),
+        FINISH_INIT("FINISH_INIT");
 
         String name;
         MessageType (String name) {

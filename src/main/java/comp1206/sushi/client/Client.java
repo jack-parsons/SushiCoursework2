@@ -22,6 +22,7 @@ public class Client implements ClientInterface {
     private User user;
 
     private ClientComms clientComms;
+    private boolean finishedInit = false;
 	
 	public Client() {
         logger.info("Starting up client...");
@@ -34,74 +35,9 @@ public class Client implements ClientInterface {
         new Thread(() -> {
             while (true) {
                 try {
-                	if (clientComms != null) {
+                	if (clientComms != null && finishedInit) {
 						String message = clientComms.receiveMessageWait();
-						System.out.println(message);
-						//                    System.out.println(Comms.extractMessageAttribute(message, Comms.MessageAttribute.NAME));
-						Comms.MessageType type = Comms.extractMessageType(message);
-						if (type != null) {
-							switch (type) {
-								case CLEAR_POSTCODES:
-//									postcodes.clear();
-									break;
-								case ADD_POSTCODE:
-									String name = Comms.extractMessageAttribute(message, Comms.MessageAttribute.POSTCODE);
-									// Check that postcode is not already added
-									Iterator<Postcode> postcodeIterator = postcodes.iterator();
-									while (postcodeIterator.hasNext()) {
-										Postcode curPostcode = postcodeIterator.next();
-										if (curPostcode.getName().equals(name)) {
-											break;
-										} else if (curPostcode.getName().equals("")) {
-											// Remove placeholder postcode
-											postcodeIterator.remove();
-										}
-									}
-									postcodes.add(new Postcode(name));
-									break;
-								case CLEAR_DISHES:
-									dishes.clear();
-									break;
-								case ADD_DISH:
-									dishes.add(new Dish(
-											Comms.extractMessageAttribute(message, Comms.MessageAttribute.NAME),
-											Comms.extractMessageAttribute(message, Comms.MessageAttribute.DESCRIPTION),
-											Float.parseFloat(Objects.requireNonNull(Comms.extractMessageAttribute(message, Comms.MessageAttribute.PRICE))),
-											0, 0));
-									break;
-								case ADD_RESTAURANT:
-									for (Postcode postcode : postcodes) {
-										if (postcode.getName().equals(Comms.extractMessageAttribute(message, Comms.MessageAttribute.POSTCODE))) {
-											restaurant = new Restaurant(
-													Comms.extractMessageAttribute(message, Comms.MessageAttribute.NAME), postcode);
-										}
-									}
-									break;
-								case CLEAR_ORDERS:
-									if (user != null)
-										user.clearOrders();
-									break;
-								case ADD_ORDER:
-									if (user != null) {
-										String dishesRaw = Comms.extractMessageAttribute(message, Comms.MessageAttribute.DISHES);
-										Order order;
-										if (dishesRaw != null) {
-											Map<String, Dish> dishMap = new HashMap<>();
-											for (Dish dish : dishes)
-												dishMap.put(dish.getName(), dish);
-											order = Configuration.retrieveOrder(dishesRaw, dishMap);
-										} else
-											order = new Order();
-
-										order.setName(Comms.extractMessageAttribute(message, Comms.MessageAttribute.NAME));
-										user.getOrders().add(order);
-									}
-									break;
-							}
-//							notifyUpdate();
-						} else {
-							throw new IllegalArgumentException("Type of message not found: " + message);
-						}
+						processMessage(message);
 					}
 				} catch (SocketException e) {
                     // Start trying to reconnect to server
@@ -115,9 +51,84 @@ public class Client implements ClientInterface {
         }).start();
 	}
 
+	private void processMessage(String message) {
+		System.out.println(message);
+		Comms.MessageType type = Comms.extractMessageType(message);
+		if (type != null) {
+			switch (type) {
+				case CLEAR_POSTCODES:
+					postcodes.clear();
+					break;
+				case ADD_POSTCODE:
+					String name = Comms.extractMessageAttribute(message, Comms.MessageAttribute.POSTCODE);
+					// Check that postcode is not already added
+					Iterator<Postcode> postcodeIterator = postcodes.iterator();
+					while (postcodeIterator.hasNext()) {
+						Postcode curPostcode = postcodeIterator.next();
+						if (curPostcode.getName().equals(name)) {
+							break;
+						} else if (curPostcode.getName().equals("")) {
+							// Remove placeholder postcode
+							postcodeIterator.remove();
+						}
+					}
+					postcodes.add(new Postcode(name));
+					break;
+				case CLEAR_DISHES:
+					dishes.clear();
+					break;
+				case ADD_DISH:
+					dishes.add(new Dish(
+							Comms.extractMessageAttribute(message, Comms.MessageAttribute.NAME),
+							Comms.extractMessageAttribute(message, Comms.MessageAttribute.DESCRIPTION),
+							Float.parseFloat(Objects.requireNonNull(Comms.extractMessageAttribute(message, Comms.MessageAttribute.PRICE))),
+							0, 0));
+					break;
+				case ADD_RESTAURANT:
+					for (Postcode postcode : postcodes) {
+						if (postcode.getName().equals(Comms.extractMessageAttribute(message, Comms.MessageAttribute.POSTCODE))) {
+							restaurant = new Restaurant(
+									Comms.extractMessageAttribute(message, Comms.MessageAttribute.NAME), postcode);
+						}
+					}
+					break;
+				case CLEAR_ORDERS:
+					if (user != null)
+						user.clearOrders();
+					break;
+				case ADD_ORDER:
+					if (user != null) {
+						String dishesRaw = Comms.extractMessageAttribute(message, Comms.MessageAttribute.DISHES);
+						Order order;
+						if (dishesRaw != null) {
+							Map<String, Dish> dishMap = new HashMap<>();
+							for (Dish dish : dishes)
+								dishMap.put(dish.getName(), dish);
+							order = Configuration.retrieveOrder(dishesRaw, dishMap);
+						} else
+							order = new Order();
+
+						order.setName(Comms.extractMessageAttribute(message, Comms.MessageAttribute.NAME));
+						user.getOrders().add(order);
+					}
+					break;
+				case FINISH_INIT:
+					finishedInit = true;
+					break;
+			}
+		} else {
+			throw new IllegalArgumentException("Type of message not found: " + message);
+		}
+	}
+
 	public void connectToServer() {
         try {
             clientComms = new ClientComms();
+            while (!finishedInit) {
+
+				String message = clientComms.receiveMessageWait();
+				processMessage(message);
+			}
         } catch (ConnectException e) {
             // Keep trying to connect
             new Thread(() -> {
