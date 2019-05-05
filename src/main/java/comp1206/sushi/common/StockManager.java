@@ -66,10 +66,10 @@ public class StockManager {
                 boolean hasStock = true;
                 for (Ingredient ingredient : dish.getRecipe().keySet()) {
 
-                    // If the amount required is greater than the amount in stock and being prepared
-                    Number amountBeingPrepared = inProgressDishes.getOrDefault(dish, 0);
+                    // If the amount required is greater than the amount in stock and being prepared then there is not enough stock
+//                        Number amountBeingPrepared = inProgressDishes.getOrDefault(dish, 0);
                     if (dish.getRecipe().get(ingredient).doubleValue() * dish.getRestockAmount().doubleValue()
-                            >= ingredientStock.get(ingredient).doubleValue() + amountBeingPrepared.doubleValue()) {
+                            > ingredientStock.get(ingredient).doubleValue()) {
                         hasStock = false;
                     }
                 }
@@ -77,9 +77,7 @@ public class StockManager {
                     inProgressDishes.put(dish, inProgressDishes.getOrDefault(
                             dish, 0).doubleValue() + dish.getRestockAmount().doubleValue());
                     for (Ingredient ingredient : dish.getRecipe().keySet()) {
-                        //TODO fix negative stocks
-                        Number amountBeingPrepared = inProgressDishes.getOrDefault(dish, 0);
-                        ingredientStock.put(ingredient, ingredientStock.getOrDefault(ingredient, 0).floatValue() - dish.getRecipe().get(ingredient).doubleValue() * dish.getRestockAmount().doubleValue() - amountBeingPrepared.doubleValue());
+                        ingredientStock.put(ingredient, ingredientStock.getOrDefault(ingredient, 0).floatValue() - dish.getRecipe().get(ingredient).doubleValue() * dish.getRestockAmount().doubleValue());
                     }
                     return dish;
                 }

@@ -149,6 +149,7 @@ public class Drone extends Model implements Runnable {
 					if (destination.equals(restaurant.getLocation())) {
 						// If the drone's destination was the restaurant go idle
 						setSource(destination);
+						setDestination(null);
 						setStatus("Idle");
 						progress = null;
 					} else {
