@@ -141,4 +141,14 @@ public class StockManager {
         }
         return null;
     }
+
+    public void removeIngredient(Ingredient ingredient) {
+        ingredientStock.remove(ingredient);
+        inTransitIngredients.remove(ingredient);
+    }
+
+    public void removeDish(Dish dish) {
+        dishStock.remove(dish);
+        inProgressDishes.remove(dish);
+    }
 }

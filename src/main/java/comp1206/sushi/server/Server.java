@@ -204,8 +204,21 @@ public class Server implements ServerInterface {
 	}
 	
 	@Override
-	public void removeDish(Dish dish) {
+	public void removeDish(Dish dish) throws UnableToDeleteException{
+		for (Order order : orders) {
+			if (order.getDishQuantities().keySet().contains(dish)) {
+				throw new UnableToDeleteException("Dish is used in order: " + order.getName());
+			}
+		}
+		for (Drone drone : drones) {
+			for (Model item : drone.getCargo().keySet()) {
+				if (item.equals(dish)) {
+					throw new UnableToDeleteException("Dish is being transported by drone: " + drone.getName());
+				}
+			}
+		}
 		this.dishes.remove(dish);
+		stockManager.removeDish(dish);
 		this.notifyUpdate();
 		// TODO deal with stock manager stock when removed
 	}
@@ -258,7 +271,20 @@ public class Server implements ServerInterface {
 	}
 
 	@Override
-	public void removeIngredient(Ingredient ingredient) {
+	public void removeIngredient(Ingredient ingredient) throws UnableToDeleteException{
+		for (Dish dish : dishes) {
+			if (dish.getRecipe().keySet().contains(ingredient)) {
+				throw new UnableToDeleteException("Ingredient is used in dish: " + dish.getName());
+			}
+		}
+		for (Drone drone : drones) {
+			for (Model item : drone.getCargo().keySet()) {
+				if (item.equals(ingredient)) {
+					throw new UnableToDeleteException("Ingredient is being transported by drone: " + drone.getName());
+				}
+			}
+		}
+		stockManager.removeIngredient(ingredient);
 		this.ingredients.remove(ingredient);
 		this.notifyUpdate();
 	}
@@ -277,7 +303,12 @@ public class Server implements ServerInterface {
 
 
 	@Override
-	public void removeSupplier(Supplier supplier) {
+	public void removeSupplier(Supplier supplier) throws UnableToDeleteException{
+		for (Ingredient ingredient : ingredients) {
+			if (ingredient.getSupplier().equals(supplier)) {
+				throw new UnableToDeleteException("Supplier is used by ingredient: " + ingredient.getName());
+			}
+		}
 		this.suppliers.remove(supplier);
 		this.notifyUpdate();
 	}
@@ -297,7 +328,6 @@ public class Server implements ServerInterface {
 
 	@Override
 	public void removeDrone(Drone drone) {
-		// TODO stop deletion if in use
 		this.drones.remove(drone);
 		this.notifyUpdate();
 	}
@@ -327,7 +357,16 @@ public class Server implements ServerInterface {
 	}
 
 	@Override
-	public void removeOrder(Order order) {
+	public void removeOrder(Order order) throws UnableToDeleteException{
+
+		for (Drone drone : drones) {
+			for (Model item : drone.getCargo().keySet()) {
+				if (item.equals(order)) {
+					throw new UnableToDeleteException("Order is being transported by drone: " + drone.getName());
+				}
+			}
+		}
+
 		this.orders.remove(order);
 		this.notifyUpdate();
 	}
@@ -402,8 +441,20 @@ public class Server implements ServerInterface {
 
 	@Override
 	public void removePostcode(Postcode postcode) throws UnableToDeleteException {
+		for (Supplier supplier : suppliers) {
+			if (supplier.getPostcode().equals(postcode)) {
+				throw new UnableToDeleteException("Postcode is used by supplier: " + supplier.getName());
+			}
+		}
+		for (User user : users) {
+			if (user.getPostcode().equals(postcode)) {
+				throw new UnableToDeleteException("Postcode is used by user: " + user.getName());
+			}
+		}
+		if (restaurant.getLocation().equals(postcode)) {
+			throw new UnableToDeleteException("Postcode is used by restaurant");
+		}
 		this.postcodes.remove(postcode);
-		// TODO make throw exception if cannot delete
 		this.notifyUpdate();
 	}
 
@@ -413,7 +464,12 @@ public class Server implements ServerInterface {
 	}
 	
 	@Override
-	public void removeUser(User user) {
+	public void removeUser(User user) throws UnableToDeleteException{
+		for (ClientConnection clientConnection : commsController.getClientConnections()) {
+			if (clientConnection.getUser().equals(user)) {
+				throw new UnableToDeleteException("User is used by client");
+			}
+		}
 		this.users.remove(user);
 		this.notifyUpdate();
 	}

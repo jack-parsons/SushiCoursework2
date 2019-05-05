@@ -203,4 +203,8 @@ public class Drone extends Model implements Runnable {
 			throw new IllegalArgumentException("Not enough space in drone capacity: " + quantity);
 		}
 	}
+
+	public Map<Model, Number> getCargo() {
+		return cargo;
+	}
 }
