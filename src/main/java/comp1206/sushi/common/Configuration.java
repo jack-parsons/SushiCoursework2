@@ -52,8 +52,10 @@ public class Configuration {
                                     Integer.parseInt(parts[4]), Integer.parseInt(parts[5]), Integer.parseInt(parts[6])));
                             break;
                         case "DISH":
-                            dishes.put(parts[1], new Dish(parts[1], parts[2],
-                                    Integer.parseInt(parts[3]), Integer.parseInt(parts[4]), Integer.parseInt(parts[5])));
+                            Dish newDish = new Dish(parts[1], parts[2],
+                                    Integer.parseInt(parts[3]), Integer.parseInt(parts[4]), Integer.parseInt(parts[5]));
+                            addDishIngredients(parts[6], newDish, ingredients);
+                            dishes.put(parts[1], newDish);
                             break;
                         case "USER":
                             users.put(parts[1], new User(parts[1], parts[2], parts[3], postcodes.get(parts[4])));
@@ -82,6 +84,15 @@ public class Configuration {
                 }
             }
         }
+    }
+
+    public static void addDishIngredients(String rawString, Dish dish, Map<String, Ingredient> ingredients) {
+        Map <Ingredient,Number> recipe = new HashMap<>();
+        for (String ingredient : rawString.split(",")) {
+            String[] ingredientParts = ingredient.split("\\*");
+            recipe.put(ingredients.get(ingredientParts[1].trim()), Integer.parseInt(ingredientParts[0].trim()));
+        }
+        dish.setRecipe(recipe);
     }
 
     public static Order retrieveOrder(User user, String rawString, Map<String, Dish> dishes) {
