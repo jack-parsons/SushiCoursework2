@@ -16,6 +16,16 @@ public class StockManager {
     private Map<Ingredient, Number> inTransitIngredients = new HashMap<>();
     private List<Order> orders = new ArrayList<>();
 
+    private List<UpdateListener> updateListeners = new ArrayList<>();
+
+    public void addUpdateListener(UpdateListener updateListener) {
+        updateListeners.add(updateListener);
+    }
+
+    public void notifyUpdate() {
+        updateListeners.forEach(listener -> listener.updated(new UpdateEvent()));
+    }
+
     public void setOrders(List<Order> orders) {
         this.orders = orders;
     }
@@ -26,6 +36,7 @@ public class StockManager {
                 dishStock.put(dish, 0);
             }
         }
+        notifyUpdate();
     }
 
     public Number getDishStock(Dish dish) {
@@ -39,11 +50,15 @@ public class StockManager {
     }
 
     public Number setDishStock(Dish dish, Number quantity) {
-        return dishStock.put(dish, quantity);
+        Number r = dishStock.put(dish, quantity);
+        notifyUpdate();
+        return r;
     }
 
     public Number setIngredientsStock(Ingredient dish, Number quantity) {
-        return ingredientStock.put(dish, quantity);
+        Number r = ingredientStock.put(dish, quantity);
+        notifyUpdate();
+        return r;
     }
 
     public void setRestockingIngredientsEnabled(boolean enabled) {
@@ -66,7 +81,6 @@ public class StockManager {
                 for (Ingredient ingredient : dish.getRecipe().keySet()) {
 
                     // If the amount required is greater than the amount in stock and being prepared then there is not enough stock
-//                        Number amountBeingPrepared = inProgressDishes.getOrDefault(dish, 0);
                     if (dish.getRecipe().get(ingredient).doubleValue() * dish.getRestockAmount().doubleValue()
                             > ingredientStock.get(ingredient).doubleValue()) {
                         hasStock = false;
@@ -76,7 +90,7 @@ public class StockManager {
                     inProgressDishes.put(dish, inProgressDishes.getOrDefault(
                             dish, 0).doubleValue() + dish.getRestockAmount().doubleValue());
                     for (Ingredient ingredient : dish.getRecipe().keySet()) {
-                        ingredientStock.put(ingredient, ingredientStock.getOrDefault(ingredient, 0).floatValue() - dish.getRecipe().get(ingredient).doubleValue() * dish.getRestockAmount().doubleValue());
+                        setIngredientsStock(ingredient, ingredientStock.getOrDefault(ingredient, 0).floatValue() - dish.getRecipe().get(ingredient).doubleValue() * dish.getRestockAmount().doubleValue());
                     }
                     return dish;
                 }

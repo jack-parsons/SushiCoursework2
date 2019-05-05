@@ -83,4 +83,12 @@ public class User extends Model {
 	public boolean checkPassword(String passString) {
 		return passString.equals(password);
 	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public String getAddress() {
+		return address;
+	}
 }

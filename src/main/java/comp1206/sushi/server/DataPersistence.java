@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -57,13 +56,41 @@ public class DataPersistence {
         }
 
         for (Dish dish : dishes) {
-            //Name:Description:Price:Restock Threshold:Restock Amount:Quantity * Item,Quantity * Item...
             printWriter.printf("DISH:%s:%s:%s:%s:%s:%s\n", dish.getName(), dish.getDescription(), dish.getPrice(), dish.getRestockThreshold(),
-                    dish.getRestockAmount(), dish.gete);
+                    dish.getRestockAmount(), generateDishConfigString(dish.getRecipe()));
         }
+
+        for (User user : users) {
+            printWriter.printf("USER:%s:%s:%s:%s\n", user.getName(), user.getPassword(), user.getAddress(), user.getPostcode().getName());
+        }
+
+        for (Order order : orders) {
+            printWriter.printf("ORDER:%s:%s\n", order.getUser().getName(), order.toString());
+        }
+
+        for (Dish dish : dishes) {
+            printWriter.printf("STOCK:%s:%s\n", dish.getName(), stockManager.getDishStock(dish).intValue());
+        }
+        for (Ingredient ingredient : ingredients) {
+            printWriter.printf("STOCK:%s:%s\n", ingredient.getName(), stockManager.getIngredientsStock(ingredient).intValue());
+        }
+
+        for (Staff staffMember : staff) {
+            printWriter.printf("STAFF:%s\n", staffMember.getName());
+        }
+
+        for (Drone drone : drones) {
+            printWriter.printf("DRONE:%s\n", drone.getSpeed());
+        }
+        printWriter.flush();
+        printWriter.close();
     }
 
-    private static String generateQuantifiedConfigString(Map<Model, Number> quantifiedItems) {
-
+    private static String generateDishConfigString(Map<Ingredient, Number> quantifiedItems) {
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry item : quantifiedItems.entrySet()) {
+            sb.append(item.getValue()).append(" * ").append(item.getKey()).append(",");
+        }
+        return sb.toString();
     }
 }
