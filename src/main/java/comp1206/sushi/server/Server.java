@@ -481,6 +481,8 @@ public class Server implements ServerInterface {
 		startStaff();
 		startDrones();
 
+		saveState(PERSISTENCE_FILENAME);
+
 		System.out.println("Loaded configuration: " + filename);
 	}
 
