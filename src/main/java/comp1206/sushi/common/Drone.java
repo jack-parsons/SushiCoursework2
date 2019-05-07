@@ -5,6 +5,8 @@ import comp1206.sushi.common.Drone;
 import java.util.HashMap;
 import java.util.Map;
 
+//TODO deal with persistence for drone cargo
+
 public class Drone extends Model implements Runnable {
 
 	private final static double BATTERY_DISCHARGE_RATE = 0.0005;
@@ -118,7 +120,6 @@ public class Drone extends Model implements Runnable {
 	}
 
 	public void setStatus(String status) {
-		notifyUpdate("status",this.status,status);
 		this.status = status;
 	}
 

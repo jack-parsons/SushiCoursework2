@@ -37,50 +37,50 @@ public class DataPersistence {
         }
 
         for (Postcode postcode : postcodes) {
-            printWriter.printf("POSTCODE:%s\n", postcode.getName());
+            printWriter.printf("POSTCODE:%s \n", postcode.getName());
         }
 
         if (!postcodes.contains(restaurant.getLocation())) {
-            printWriter.printf("POSTCODE:%s\n", restaurant.getLocation().getName());
+            printWriter.printf("POSTCODE:%s \n", restaurant.getLocation().getName());
         }
-        printWriter.printf("RESTAURANT:%s:%s\n", restaurant.getName(), restaurant.getLocation().getName());
+        printWriter.printf("RESTAURANT:%s:%s \n", restaurant.getName(), restaurant.getLocation().getName());
 
         for (Supplier supplier : suppliers) {
-            printWriter.printf("SUPPLIER:%s:%s\n", supplier.getName(), supplier.getPostcode().getName());
+            printWriter.printf("SUPPLIER:%s:%s \n", supplier.getName(), supplier.getPostcode().getName());
         }
 
         for (Ingredient ingredient: ingredients) {
-            printWriter.printf("INGREDIENT:%s:%s:%s:%s:%s:%s\n", ingredient.getName(), ingredient.getUnit(),
+            printWriter.printf("INGREDIENT:%s:%s:%s:%s:%s:%s \n", ingredient.getName(), ingredient.getUnit(),
                     ingredient.getSupplier().getName(), ingredient.getRestockThreshold(), ingredient.getRestockAmount(),
                     ingredient.getWeight());
         }
 
         for (Dish dish : dishes) {
-            printWriter.printf("DISH:%s:%s:%s:%s:%s:%s\n", dish.getName(), dish.getDescription(), dish.getPrice(), dish.getRestockThreshold(),
+            printWriter.printf("DISH:%s:%s:%s:%s:%s:%s \n", dish.getName(), dish.getDescription(), dish.getPrice(), dish.getRestockThreshold(),
                     dish.getRestockAmount(), generateDishConfigString(dish.getRecipe()));
         }
 
         for (User user : users) {
-            printWriter.printf("USER:%s:%s:%s:%s\n", user.getName(), user.getPassword(), user.getAddress(), user.getPostcode().getName());
+            printWriter.printf("USER:%s:%s:%s:%s \n", user.getName(), user.getPassword(), user.getAddress(), user.getPostcode().getName());
         }
 
         for (Order order : orders) {
-            printWriter.printf("ORDER:%s:%s\n", order.getUser().getName(), order.toString());
+            printWriter.printf("ORDER:%s:%s \n", order.getUser().getName(), order.toString());
         }
 
         for (Dish dish : dishes) {
-            printWriter.printf("STOCK:%s:%s\n", dish.getName(), stockManager.getDishStock(dish).intValue());
+            printWriter.printf("STOCK:%s:%s \n", dish.getName(), stockManager.getDishStock(dish).intValue());
         }
         for (Ingredient ingredient : ingredients) {
-            printWriter.printf("STOCK:%s:%s\n", ingredient.getName(), stockManager.getIngredientsStock(ingredient).intValue());
+            printWriter.printf("STOCK:%s:%s \n", ingredient.getName(), stockManager.getIngredientsStock(ingredient).intValue());
         }
 
         for (Staff staffMember : staff) {
-            printWriter.printf("STAFF:%s\n", staffMember.getName());
+            printWriter.printf("STAFF:%s \n", staffMember.getName());
         }
 
         for (Drone drone : drones) {
-            printWriter.printf("DRONE:%s\n", drone.getSpeed());
+            printWriter.printf("DRONE:%s \n", drone.getSpeed());
         }
         printWriter.flush();
         printWriter.close();
