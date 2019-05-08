@@ -110,14 +110,19 @@ public class Server implements ServerInterface {
 							}
 							users.add(new User(username, password, address, postcode));
 						case LOGIN:
+							boolean loggedIn = false;
 							for (User user : users) {
 								if (user.getName().equals(Comms.extractMessageAttribute(reply, Comms.MessageAttribute.USERNAME))) {
 									if (user.checkPassword(Comms.extractMessageAttribute(reply, Comms.MessageAttribute.PASSWORD))) {
 										clientConnection.setUser(user);
-										clientConnection.sendMessage(String.format("NEW_USER|ADDRESS=%s|POSTCODE=%s", "", user.getPostcode()));
+										clientConnection.sendMessage(String.format("NEW_USER|USERNAME=%s|PASSWORD=%s|ADDRESS=%s|POSTCODE=%s", user.getName(), user.getPassword(), user.getAddress(), user.getPostcode()));
+										loggedIn = true;
 									} else {
 										clientConnection.sendMessage("LOGIN_REJECTED");
 									}
+								}
+								if (!loggedIn) {
+									clientConnection.sendMessage("LOGIN_REJECTED");
 								}
 							}
 							break;
@@ -328,6 +333,7 @@ public class Server implements ServerInterface {
 
 	@Override
 	public void removeDrone(Drone drone) {
+		drone.stop();
 		this.drones.remove(drone);
 		this.notifyUpdate();
 	}
@@ -347,6 +353,7 @@ public class Server implements ServerInterface {
 
 	@Override
 	public void removeStaff(Staff staff) {
+		staff.stop();
 		this.staff.remove(staff);
 		this.notifyUpdate();
 	}
@@ -537,7 +544,11 @@ public class Server implements ServerInterface {
 		startStaff();
 		startDrones();
 
+		notifyUpdate();
+
 		saveState(PERSISTENCE_FILENAME);
+
+
 
 		System.out.println("Loaded configuration: " + filename);
 	}

@@ -27,8 +27,13 @@ public class Staff extends Model implements Runnable {
 		setStatus("Idle");
 	}
 
+	@Override
 	public String getName() {
 		return name;
+	}
+
+	public void stop() {
+		running = false;
 	}
 
 	public void setName(String name) {

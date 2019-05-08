@@ -24,6 +24,7 @@ public class Client implements ClientInterface {
 
     private ClientComms clientComms;
     private boolean finishedInit = false;
+    private boolean loggingIn = false;
 	
 	public Client() {
         logger.info("Starting up client...");
@@ -36,19 +37,20 @@ public class Client implements ClientInterface {
         new Thread(() -> {
             while (true) {
                 try {
-                	if (clientComms != null && finishedInit) {
-						String message = clientComms.receiveMessageWait();
-						processMessage(message, user);
+                	if (clientComms != null && finishedInit && !loggingIn) {
+						String message = clientComms.receiveMessage();
+						if (message != null)
+							processMessage(message, user);
 					}
+					Thread.sleep(10);
 				} catch (SocketException e) {
                     // Start trying to reconnect to server
                     clientComms.disconnect();
                     connectToServer();
-                }
-				catch (IOException e) {
+                } catch (InterruptedException | IOException e) {
 					e.printStackTrace();
 				}
-            }
+			}
         }).start();
 	}
 
@@ -116,6 +118,20 @@ public class Client implements ClientInterface {
 				case FINISH_INIT:
 					finishedInit = true;
 					break;
+				case NEW_USER:
+					String postcode = Comms.extractMessageAttribute(message, Comms.MessageAttribute.POSTCODE);
+					String address = Comms.extractMessageAttribute(message, Comms.MessageAttribute.ADDRESS);
+					String username = Comms.extractMessageAttribute(message, Comms.MessageAttribute.USERNAME);
+					String password = Comms.extractMessageAttribute(message, Comms.MessageAttribute.PASSWORD);
+					this.user = new User(username, password, address, new Postcode(postcode));
+					loggingIn = false;
+					break;
+				case LOGIN_REJECTED:
+					this.user = null;
+					loggingIn = false;
+					break;
+				default:
+					System.err.println("Login rejected in wrong place");
 			}
 		} else {
 			throw new IllegalArgumentException("Type of message not found: " + message);
@@ -126,9 +142,11 @@ public class Client implements ClientInterface {
         try {
             clientComms = new ClientComms();
             while (!finishedInit) {
+				if (!loggingIn) {
+					String message = clientComms.receiveMessageWait();
+					processMessage(message, user);
+				}
 
-				String message = clientComms.receiveMessageWait();
-				processMessage(message, user);
 			}
         } catch (ConnectException e) {
             // Keep trying to connect
@@ -137,7 +155,7 @@ public class Client implements ClientInterface {
                     try {
                         clientComms = new ClientComms();
                         finishedInit = false;
-						while (!finishedInit) {
+						while (!finishedInit && !loggingIn) {
 							String message = clientComms.receiveMessageWait();
 							processMessage(message, user);
 						}
@@ -179,21 +197,15 @@ public class Client implements ClientInterface {
 
 	@Override
 	public User login(String username, String password) {
-        clientComms.sendMessage(String.format("LOGIN|USERNAME=%s|PASSWORD=%s", username, password));
-		try {
-			String reply = clientComms.receiveMessageWait();
-			if (Comms.extractMessageType(reply) != Comms.MessageType.LOGIN_REJECTED) {
-				String postcode = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.POSTCODE);
-				String address = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.ADDRESS);
-				return user = new User(username, password, address, new Postcode(postcode));
-			} else {
-				// If password is incorrect
-				return null;
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
+		loggingIn = true;
+		clientComms.sendMessage(String.format("LOGIN|USERNAME=%s|PASSWORD=%s", username, password));
+//		System.out.println("1");
+//			String reply = clientComms.receiveMessageWait();
+		while (loggingIn) {
 		}
-		return null;
+		loggingIn = false;
+		System.out.println("Logging in");
+		return user;
 	}
 
 	@Override

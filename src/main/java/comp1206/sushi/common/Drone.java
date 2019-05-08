@@ -127,6 +127,10 @@ public class Drone extends Model implements Runnable {
 		this.restaurant = restaurant;
 	}
 
+	public void stop() {
+		running = false;
+	}
+
 	@Override
 	public void run() {
 		lastT = System.currentTimeMillis();
@@ -151,7 +155,7 @@ public class Drone extends Model implements Runnable {
 						Order orderToDeliver = stockManager.findOrderToDeliver();
 						if (orderToDeliver != null) {
 							setDestination(orderToDeliver.getUser().getPostcode());
-							addCargo(orderToDeliver, Math.min(ingredientToRestock.getRestockAmount().floatValue(), capacityRemaining().floatValue()));
+							addCargo(orderToDeliver, capacityRemaining().floatValue());
 							setProgress(0);
 							setStatus(String.format("Flying to user: %s for order: %s", orderToDeliver.getUser().getName(), orderToDeliver.getName()));
 						}

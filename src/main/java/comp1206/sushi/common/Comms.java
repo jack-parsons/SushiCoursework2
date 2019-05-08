@@ -52,6 +52,7 @@ public abstract class Comms {
     public void sendMessage(String message) {
         if (socket.isConnected()) {
             connectionOutput.println(message);
+            System.out.println(message);
         } else {
             System.err.println("Not connected");
         }
@@ -65,7 +66,10 @@ public abstract class Comms {
 
     public String receiveMessageWait() throws IOException {
         String in = null;
-        while (socket.isConnected() && (in=connectionInput.readLine()) == null){}
+        while (socket.isConnected() && (in=connectionInput.readLine()) == null) {
+            System.out.println("asd "+in);
+        }
+        System.out.println("skjhdsdkjfs" + in + "123213");
         return in;
     }
 
