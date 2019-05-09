@@ -53,7 +53,7 @@ public abstract class Comms {
     public void sendMessage(String message) {
         if (socket.isConnected()) {
             connectionOutput.println(message);
-            System.out.println(message);
+//            System.out.println(message);
         } else {
             System.err.println("Not connected");
         }
@@ -61,7 +61,6 @@ public abstract class Comms {
 
     public String receiveMessage() throws IOException {
         if (socket.isConnected() && !socket.isClosed() && connectionInput.ready()){
-            System.out.println(connectionInput.ready());
             return connectionInput.readLine();
         }
         return null;

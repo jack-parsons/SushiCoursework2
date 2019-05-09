@@ -91,7 +91,7 @@ public class Server implements ServerInterface {
 		saveState(PERSISTENCE_FILENAME);
 		addUpdateListener((e) -> saveState(PERSISTENCE_FILENAME));
 		addUpdateListener((e) -> {
-			if (e.property.equals("status")) {
+			if (e.property != null && e.property.equals("status")) {
 				for (ClientConnection clientConnection : commsController.getClientConnections()) {
 					if (clientConnection.getUser() != null) {
 						clientConnection.sendMessage("FINISH_INIT");
@@ -147,6 +147,7 @@ public class Server implements ServerInterface {
 										clientConnection.setUser(user);
 										clientConnection.sendMessage(String.format("NEW_USER|USERNAME=%s|PASSWORD=%s|ADDRESS=%s|POSTCODE=%s", user.getName(), user.getPassword(), user.getAddress(), user.getPostcode()));
 										successfulLogin = true;
+										updateClient(clientConnection, true);
 									}
 								}
 							}
@@ -634,7 +635,6 @@ public class Server implements ServerInterface {
 	public void saveState(String filename) {
 		new DataPersistence(new File(filename)).writeStateToFile(restaurant, dishes, drones, ingredients, orders, staff,
 				suppliers, users, postcodes, stockManager);
-		System.out.println(orders.size());
 	}
 
 	@Override
