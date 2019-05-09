@@ -90,6 +90,15 @@ public class Server implements ServerInterface {
 
 		saveState(PERSISTENCE_FILENAME);
 		addUpdateListener((e) -> saveState(PERSISTENCE_FILENAME));
+		addUpdateListener((e) -> {
+			if (e.property.equals("status")) {
+				for (ClientConnection clientConnection : commsController.getClientConnections()) {
+					if (clientConnection.getUser() != null) {
+						clientConnection.sendMessage("FINISH_INIT");
+					}
+				}
+			}
+		});
 
 	}
 
@@ -221,25 +230,25 @@ public class Server implements ServerInterface {
             clientConnection.sendMessage("ADD_POSTCODE|POSTCODE="+postcode);
         }
 
+		clientConnection.sendMessage(String.format("ADD_RESTAURANT|NAME=%s|POSTCODE=%s", restaurant.getName(), restaurant.getLocation()));
+
 	    if (includeDishes) {
 			clientConnection.sendMessage("CLEAR_DISHES");
 			for (Dish dish : dishes) {
 				clientConnection.sendMessage(String.format("ADD_DISH|NAME=%s|DESCRIPTION=%s|PRICE=%s", dish.getName(), dish.getDescription(), dish.getPrice()));
 			}
-			clientConnection.sendMessage(String.format("BASKET_UPDATE|DISHES=%s", Order.dishQuantitiesToString(clientConnection.getUser().getBasket())));
+			if (clientConnection.getUser() != null)
+				clientConnection.sendMessage(String.format("BASKET_UPDATE|DISHES=%s", Order.dishQuantitiesToString(clientConnection.getUser().getBasket())));
 		}
 //
 		if (clientConnection.getUser() != null) {
 			clientConnection.sendMessage("CLEAR_ORDERS");
 			for (Order order : orders) {
-				System.out.println(order.getUser().getName()+" "+(clientConnection.getUser().getName()));
 				if (order.getUser().getName().equals(clientConnection.getUser().getName())) {
 					clientConnection.sendMessage(String.format("ADD_ORDER|STATUS=%s|NAME=%s|DISHES=%s", order.getStatus(), order.getName(), order));
 				}
 			}
 		}
-
-		clientConnection.sendMessage(String.format("ADD_RESTAURANT|NAME=%s|POSTCODE=%s", restaurant.getName(), restaurant.getLocation()));
     }
 	
 	@Override
