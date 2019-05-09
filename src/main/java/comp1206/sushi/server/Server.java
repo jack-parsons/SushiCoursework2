@@ -182,7 +182,6 @@ public class Server implements ServerInterface {
 								for (ClientConnection clientConnection2 : commsController.getClientConnections()) {
 									updateClient(clientConnection2, false);
 								}
-								notifyUpdate();
 							}
 							break;
 						case CANCEL_ORDER:
@@ -210,7 +209,7 @@ public class Server implements ServerInterface {
 								if (clientConnection2.getUser() == clientConnection.getUser())
 									updateClient(clientConnection2, true);
 							}
-							notifyUpdate();
+//							notifyUpdate();
 					}
 				}
 
@@ -233,13 +232,13 @@ public class Server implements ServerInterface {
 
 		clientConnection.sendMessage(String.format("ADD_RESTAURANT|NAME=%s|POSTCODE=%s", restaurant.getName(), restaurant.getLocation()));
 
-	    if (includeDishes) {
+	    if (true) {
 			clientConnection.sendMessage("CLEAR_DISHES");
 			for (Dish dish : dishes) {
 				clientConnection.sendMessage(String.format("ADD_DISH|NAME=%s|DESCRIPTION=%s|PRICE=%s", dish.getName(), dish.getDescription(), dish.getPrice()));
 			}
-			if (clientConnection.getUser() != null)
-				clientConnection.sendMessage(String.format("BASKET_UPDATE|DISHES=%s", Order.dishQuantitiesToString(clientConnection.getUser().getBasket())));
+//			if (clientConnection.getUser() != null)
+//				clientConnection.sendMessage(String.format("BASKET_UPDATE|DISHES=%s", Order.dishQuantitiesToString(clientConnection.getUser().getBasket())));
 		}
 //
 		if (clientConnection.getUser() != null) {

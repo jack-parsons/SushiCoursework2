@@ -54,8 +54,6 @@ public class Configuration {
                         case "DISH":
                             Dish newDish = new Dish(parts[1], parts[2],
                                     Integer.parseInt(parts[3]), Integer.parseInt(parts[4]), Integer.parseInt(parts[5]));
-                            System.out.println(parts.length);
-                            System.out.println(parts[6]);
                             addDishIngredients(parts[6], newDish, ingredients);
                             dishes.put(parts[1], newDish);
                             break;

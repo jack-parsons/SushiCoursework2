@@ -274,6 +274,8 @@ public class Client implements ClientInterface {
 		Order basket = new Order(user.getBasket(), user);
 		clientComms.sendMessage(String.format("ADD_ORDER|NAME=%s|DISHES=%s", basket.getName(), basket));
 		user.getOrders().add(basket);
+		user.updateBasket(new HashMap<>());
+		notifyUpdate();
 		return basket;
 	}
 
