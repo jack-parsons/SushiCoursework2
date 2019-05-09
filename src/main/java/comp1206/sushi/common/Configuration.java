@@ -70,7 +70,7 @@ public class Configuration {
                             Order order = retrieveOrder(users.get(parts[1]), parts[2], dishes);
                             if (parts.length >= 4) {
                                 order.setName(parts[3].replace("\\~", ":"));
-                                orders.put(parts[3], order);
+                                orders.put(parts[3] + users.get(parts[1]).getName(), order);
                             } else {
                                 orders.put(order.getName(), order);
                             }
