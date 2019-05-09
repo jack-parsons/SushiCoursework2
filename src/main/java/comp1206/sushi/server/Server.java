@@ -73,10 +73,8 @@ public class Server implements ServerInterface {
 	}
 
 	private void processClientComms() {
-		System.out.println("starting comms");
 		for (ClientConnection clientConnection : commsController.getClientConnections()) {
 			try {
-				System.out.println(clientConnection.getUser());
 				if (!clientConnection.checkUpdated()) {
 					updateClient(clientConnection);
 					clientConnection.sendMessage(Comms.MessageType.FINISH_INIT.name());
@@ -110,20 +108,19 @@ public class Server implements ServerInterface {
 								throw new IllegalArgumentException("Postcode not found: " + postcodeRaw);
 							}
 							users.add(new User(username, password, address, postcode));
+							notifyUpdate();
 						case LOGIN:
-							boolean loggedIn = false;
+							boolean successfulLogin = false;
 							for (User user : users) {
 								if (user.getName().equals(Comms.extractMessageAttribute(reply, Comms.MessageAttribute.USERNAME))) {
 									if (user.checkPassword(Comms.extractMessageAttribute(reply, Comms.MessageAttribute.PASSWORD))) {
 										clientConnection.setUser(user);
 										clientConnection.sendMessage(String.format("NEW_USER|USERNAME=%s|PASSWORD=%s|ADDRESS=%s|POSTCODE=%s", user.getName(), user.getPassword(), user.getAddress(), user.getPostcode()));
-										loggedIn = true;
-									} else {
-										clientConnection.sendMessage("LOGIN_REJECTED");
+										successfulLogin = true;
 									}
 								}
 							}
-							if (!loggedIn) {
+							if (!successfulLogin) {
 								clientConnection.sendMessage("LOGIN_REJECTED");
 							}
 							break;
@@ -140,15 +137,32 @@ public class Server implements ServerInterface {
 								} else {
 									order = new Order(clientConnection.getUser());
 								}
+								order.addUpdateListener(e->{
+									for (ClientConnection clientConnection2 : commsController.getClientConnections()) {
+										// Update all clients logged in as this user
+										if (clientConnection2.getUser() == clientConnection.getUser())
+											updateClient(clientConnection2);
+									}
+								});
 
 								order.setName(Comms.extractMessageAttribute(reply, Comms.MessageAttribute.NAME));
 								clientConnection.getUser().getOrders().add(order);
 								addOrder(order);
+								for (ClientConnection clientConnection2 : commsController.getClientConnections()) {
+									updateClient(clientConnection2);
+								}
+								notifyUpdate();
 							}
 							break;
 						case CANCEL_ORDER:
 							String orderName = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.NAME);
 							orders.removeIf(order -> order.getName().equals(orderName));
+							for (ClientConnection clientConnection2 : commsController.getClientConnections()) {
+								// Update all clients logged in as this user
+								if (clientConnection2.getUser() == clientConnection.getUser())
+									updateClient(clientConnection2);
+							}
+							notifyUpdate();
 							break;
 						case BASKET_UPDATE:
 							String dishesRaw = Comms.extractMessageAttribute(reply, Comms.MessageAttribute.DISHES);
@@ -160,6 +174,12 @@ public class Server implements ServerInterface {
 								order = Configuration.retrieveOrder(clientConnection.getUser(), dishesRaw, dishMap);
 								clientConnection.getUser().updateBasket(order.getDishQuantities());
 							}
+							for (ClientConnection clientConnection2 : commsController.getClientConnections()) {
+								// Update all clients logged in as this user
+								if (clientConnection2.getUser() == clientConnection.getUser())
+									updateClient(clientConnection2);
+							}
+							notifyUpdate();
 					}
 				}
 
@@ -188,8 +208,9 @@ public class Server implements ServerInterface {
 		if (clientConnection.getUser() != null) {
 			clientConnection.sendMessage("CLEAR_ORDERS");
 			for (Order order : clientConnection.getUser().getOrders()) {
-				clientConnection.sendMessage(String.format("ADD_ORDER|DISHES=%s", order));
+				clientConnection.sendMessage(String.format("ADD_ORDER|STATUS=%s|NAME=%s|DISHES=%s", order.getStatus(), order.getName(), order));
 			}
+			clientConnection.sendMessage(String.format("BASKET_UPDATE|DISHES=%s", Order.dishQuantitiesToString(clientConnection.getUser().getBasket())));
 		}
 
 		clientConnection.sendMessage(String.format("ADD_RESTAURANT|NAME=%s|POSTCODE=%s", restaurant.getName(), restaurant.getLocation()));
@@ -333,7 +354,12 @@ public class Server implements ServerInterface {
 	}
 
 	@Override
-	public void removeDrone(Drone drone) {
+	public void removeDrone(Drone drone) throws UnableToDeleteException {
+		for (Model item : drone.getCargo().keySet()) {
+			if (item instanceof Order) {
+				((Order) item).stopDelivery();
+			}
+		}
 		drone.stop();
 		this.drones.remove(drone);
 		this.notifyUpdate();

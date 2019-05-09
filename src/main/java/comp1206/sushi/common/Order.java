@@ -26,6 +26,7 @@ public class Order extends Model {
 		LocalDateTime now = LocalDateTime.now();  
 		this.name = dtf.format(now);
 		this.user = user;
+		setStatus("Being prepared");
 	}
 
 	public Order(Map<Dish, Number> dishes, User user) {
@@ -34,6 +35,7 @@ public class Order extends Model {
 		this.name = dtf.format(now);
 		this.dishes = dishes;
 		this.user = user;
+		setStatus("Being prepared");
 	}
 
 	public void startDelivery() {
@@ -45,6 +47,12 @@ public class Order extends Model {
 		setStatus("Delivered");
 		isBeingDelivered = false;
 		isComplete = true;
+	}
+
+	public void stopDelivery() {
+		setStatus("Being prepared");
+		isBeingDelivered = false;
+		isComplete = false;
 	}
 
 	public boolean isBeingDelivered() {
@@ -85,8 +93,8 @@ public class Order extends Model {
 	}
 
 	public void setStatus(String status) {
-		notifyUpdate("status",this.status,status);
 		this.status = status;
+		notifyUpdate("status",this.status,status);
 	}
 
 	public Number getOrderCost() {
@@ -99,6 +107,10 @@ public class Order extends Model {
 
 	@Override
 	public String toString() {
+		return Order.dishQuantitiesToString(dishes);
+	}
+
+	public static String dishQuantitiesToString(Map<Dish, Number> dishes) {
 		if (dishes.size() > 0) {
 			StringBuilder sb = new StringBuilder();
 			for (Dish dish : dishes.keySet()) {

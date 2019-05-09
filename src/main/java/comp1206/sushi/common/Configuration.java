@@ -67,7 +67,11 @@ public class Configuration {
                             drones.put(parts[1], new Drone(Integer.parseInt(parts[1]), stockManager, restaurant));
                             break;
                         case "ORDER":
-                            orders.put(parts[1], retrieveOrder(users.get(parts[1]), parts[2], dishes));
+                            Order order = retrieveOrder(users.get(parts[1]), parts[2], dishes);
+                            if (parts.length >= 4) {
+                                order.setName(parts[3].replace("\\~", ":"));
+                            }
+                            orders.put(parts[1], order);
                             break;
                         case "STOCK":
                             if (dishes.containsKey(parts[1])) {
@@ -99,7 +103,8 @@ public class Configuration {
         Order order = new Order(user);
         for (String dish : rawString.split(",")) {
             String[] dishParts = dish.split("\\*");
-            order.addDish(dishes.get(dishParts[1].trim()), Integer.parseInt(dishParts[0].trim()));
+            if (dishParts.length > 1)
+                order.addDish(dishes.get(dishParts[1].trim()), Integer.parseInt(dishParts[0].trim()));
         }
         return order;
     }

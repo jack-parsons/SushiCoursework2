@@ -37,7 +37,7 @@ public class Client implements ClientInterface {
         new Thread(() -> {
             while (true) {
                 try {
-                	if (clientComms != null && finishedInit && !loggingIn) {
+                	if (clientComms != null && finishedInit) {
 						String message = clientComms.receiveMessage();
 						if (message != null)
 							processMessage(message);
@@ -112,11 +112,26 @@ public class Client implements ClientInterface {
 							order = new Order(user);
 
 						order.setName(Comms.extractMessageAttribute(message, Comms.MessageAttribute.NAME));
+						order.setStatus(Comms.extractMessageAttribute(message, Comms.MessageAttribute.STATUS));
 						user.getOrders().add(order);
 					}
 					break;
 				case FINISH_INIT:
 					finishedInit = true;
+					break;
+				case BASKET_UPDATE:
+					if (user != null) {
+						String dishesRaw = Comms.extractMessageAttribute(message, Comms.MessageAttribute.DISHES);
+						Order order;
+						if (dishesRaw != null) {
+							Map<String, Dish> dishMap = new HashMap<>();
+							for (Dish dish : dishes)
+								dishMap.put(dish.getName(), dish);
+							order = Configuration.retrieveOrder(user, dishesRaw, dishMap);
+							user.updateBasket(order.getDishQuantities());
+						}
+					}
+					notifyUpdate();
 					break;
 				case NEW_USER:
 					String postcode = Comms.extractMessageAttribute(message, Comms.MessageAttribute.POSTCODE);
@@ -131,7 +146,7 @@ public class Client implements ClientInterface {
 					loggingIn = false;
 					break;
 				default:
-					System.err.println("Login rejected in wrong place");
+					System.err.println("Incorrect message type");
 			}
 		} else {
 			throw new IllegalArgumentException("Type of message not found: " + message);
@@ -200,7 +215,7 @@ public class Client implements ClientInterface {
 	@Override
 	public User login(String username, String password) {
 		loggingIn = true;
-		clientComms.sendMessage(String.format("LOGIN|USERNAME=%s|PASSWORD=%s", username, password));
+		clientComms.sendMessage(String.format("LOGIN|USERNAME=%s|PASSWORD=%s", username==null?"":username, password==null?"":password));
 //		System.out.println("1");
 //			String reply = clientComms.receiveMessageWait();
 		while (loggingIn) {
@@ -271,8 +286,7 @@ public class Client implements ClientInterface {
 
 	@Override
 	public boolean isOrderComplete(Order order) {
-		// TODO Auto-generated method stub
-		return false;
+		return order.isComplete();
 	}
 
 	@Override

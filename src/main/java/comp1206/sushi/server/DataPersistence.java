@@ -65,7 +65,7 @@ public class DataPersistence {
         }
 
         for (Order order : orders) {
-            printWriter.printf("ORDER:%s:%s \n", order.getUser().getName(), order.toString());
+            printWriter.printf("ORDER:%s:%s:%s \n", order.getUser().getName(), order.toString(), order.getName().replace(":", "\\~"));
         }
 
         for (Dish dish : dishes) {

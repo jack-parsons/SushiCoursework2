@@ -41,7 +41,8 @@ public abstract class Comms {
         NAME("NAME"),
         DESCRIPTION("DESCRIPTION"),
         PRICE("PRICE"),
-        DISHES("DISHES");
+        DISHES("DISHES"),
+        STATUS("STATUS");
 
         String name;
         MessageAttribute (String name) {
