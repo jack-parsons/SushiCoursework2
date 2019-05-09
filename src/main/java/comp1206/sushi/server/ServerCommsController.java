@@ -22,7 +22,7 @@ public class ServerCommsController implements Runnable {
                 serverComms.add(newServerComm);
             }
         } catch (IOException e) {
-            e.printStackTrace(); // TODO sort out
+            e.printStackTrace();
         }
     }
 

@@ -73,8 +73,10 @@ public class Server implements ServerInterface {
 	}
 
 	private void processClientComms() {
+		System.out.println("starting comms");
 		for (ClientConnection clientConnection : commsController.getClientConnections()) {
 			try {
+				System.out.println(clientConnection.getUser());
 				if (!clientConnection.checkUpdated()) {
 					updateClient(clientConnection);
 					clientConnection.sendMessage(Comms.MessageType.FINISH_INIT.name());
@@ -90,7 +92,6 @@ public class Server implements ServerInterface {
 					commsController.removeClientConnection(clientConnection);
 					continue;
 				}
-				System.out.println(reply);
 				if (reply != null && Comms.extractMessageType(reply) != null) {
 					switch (Objects.requireNonNull(Comms.extractMessageType(reply))) {
 						case REGISTER:
@@ -121,9 +122,9 @@ public class Server implements ServerInterface {
 										clientConnection.sendMessage("LOGIN_REJECTED");
 									}
 								}
-								if (!loggedIn) {
-									clientConnection.sendMessage("LOGIN_REJECTED");
-								}
+							}
+							if (!loggedIn) {
+								clientConnection.sendMessage("LOGIN_REJECTED");
 							}
 							break;
 						case ADD_ORDER:

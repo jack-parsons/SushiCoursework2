@@ -20,26 +20,7 @@ public class ClientConnection extends Comms {
         connectionInput = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
         System.out.println("Client connected");
-
-//        new Thread(this::checkInput).start();
     }
-
-//    private void checkInput() {
-//        try {
-//            String reply = receiveMessageWait();
-//            System.out.println(reply);
-//            switch (Comms.extractMessageType(reply)) {
-//                case LOGIN:
-//                case REGISTER:
-//                    username=Comms.extractMessageAttribute(reply, MessageAttribute.USERNAME);
-//                    address =
-//            }
-//            sendMessage(String.format("NEW_USER|USERNAME=%s|ADDRESS=%s|POSTCODE=%s|", username, address, postcode));
-//        } catch (IOException e) {
-//            System.out.println("User connected");
-//        }
-//        System.out.println("User joined: " + username);
-//    }
 
     public void setUser(User user) {
         this.user = user;

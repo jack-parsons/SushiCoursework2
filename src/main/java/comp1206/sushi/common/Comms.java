@@ -59,8 +59,10 @@ public abstract class Comms {
     }
 
     public String receiveMessage() throws IOException {
-        if (socket.isConnected() && !socket.isClosed())
+        if (socket.isConnected() && !socket.isClosed() && connectionInput.ready()){
+            System.out.println(connectionInput.ready());
             return connectionInput.readLine();
+        }
         return null;
     }
 

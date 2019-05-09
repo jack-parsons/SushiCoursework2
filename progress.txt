@@ -9,7 +9,7 @@ Please update this file to reflect your progress by adding a * inside the bracke
 [*] 6: Communication
 [*] 7: Drones
 [*] 8: Persistence
-[ ] Extension: Drone battery
-[ ] Extension: Staff fatigue
+[*] Extension: Drone battery
+[*] Extension: Staff fatigue
 [ ] Extension: Drone capacity
 [ ] Extension: Multiple drone hops

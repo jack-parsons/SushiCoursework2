@@ -40,7 +40,7 @@ public class Client implements ClientInterface {
                 	if (clientComms != null && finishedInit && !loggingIn) {
 						String message = clientComms.receiveMessage();
 						if (message != null)
-							processMessage(message, user);
+							processMessage(message);
 					}
 					Thread.sleep(10);
 				} catch (SocketException e) {
@@ -54,7 +54,7 @@ public class Client implements ClientInterface {
         }).start();
 	}
 
-	private void processMessage(String message, User user) {
+	private void processMessage(String message) {
 		System.out.println(message);
 		Comms.MessageType type = Comms.extractMessageType(message);
 		if (type != null) {
@@ -141,10 +141,12 @@ public class Client implements ClientInterface {
 	public void connectToServer() {
         try {
             clientComms = new ClientComms();
+			finishedInit = false;
             while (!finishedInit) {
 				if (!loggingIn) {
-					String message = clientComms.receiveMessageWait();
-					processMessage(message, user);
+					String message = clientComms.receiveMessage();
+					if (message != null)
+						processMessage(message);
 				}
 
 			}
@@ -157,7 +159,7 @@ public class Client implements ClientInterface {
                         finishedInit = false;
 						while (!finishedInit && !loggingIn) {
 							String message = clientComms.receiveMessageWait();
-							processMessage(message, user);
+							processMessage(message);
 						}
                         System.out.println("Connection to server successful");
                         break;
