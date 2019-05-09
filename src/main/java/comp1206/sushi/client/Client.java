@@ -118,6 +118,7 @@ public class Client implements ClientInterface {
 					break;
 				case FINISH_INIT:
 					finishedInit = true;
+					notifyUpdate();
 					break;
 				case BASKET_UPDATE:
 					if (user != null) {
@@ -131,7 +132,6 @@ public class Client implements ClientInterface {
 							user.updateBasket(order.getDishQuantities());
 						}
 					}
-					notifyUpdate();
 					break;
 				case NEW_USER:
 					String postcode = Comms.extractMessageAttribute(message, Comms.MessageAttribute.POSTCODE);
@@ -216,8 +216,6 @@ public class Client implements ClientInterface {
 	public User login(String username, String password) {
 		loggingIn = true;
 		clientComms.sendMessage(String.format("LOGIN|USERNAME=%s|PASSWORD=%s", username==null?"":username, password==null?"":password));
-//		System.out.println("1");
-//			String reply = clientComms.receiveMessageWait();
 		while (loggingIn) {
 		}
 		loggingIn = false;

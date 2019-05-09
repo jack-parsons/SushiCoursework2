@@ -67,6 +67,17 @@ public class Server implements ServerInterface {
 			}
 		}).start();
 
+		new Thread(() -> {
+			while(true) {
+				notifyUpdate();
+				try {
+					Thread.sleep(5000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}).start();
+
 		saveState(PERSISTENCE_FILENAME);
 		addUpdateListener((e) -> saveState(PERSISTENCE_FILENAME));
 
@@ -207,8 +218,11 @@ public class Server implements ServerInterface {
 //
 		if (clientConnection.getUser() != null) {
 			clientConnection.sendMessage("CLEAR_ORDERS");
-			for (Order order : clientConnection.getUser().getOrders()) {
-				clientConnection.sendMessage(String.format("ADD_ORDER|STATUS=%s|NAME=%s|DISHES=%s", order.getStatus(), order.getName(), order));
+			for (Order order : orders) {
+				System.out.println(order.getUser().getName()+" "+(clientConnection.getUser().getName()));
+				if (order.getUser().getName().equals(clientConnection.getUser().getName())) {
+					clientConnection.sendMessage(String.format("ADD_ORDER|STATUS=%s|NAME=%s|DISHES=%s", order.getStatus(), order.getName(), order));
+				}
 			}
 			clientConnection.sendMessage(String.format("BASKET_UPDATE|DISHES=%s", Order.dishQuantitiesToString(clientConnection.getUser().getBasket())));
 		}
@@ -247,7 +261,6 @@ public class Server implements ServerInterface {
 		this.dishes.remove(dish);
 		stockManager.removeDish(dish);
 		this.notifyUpdate();
-		// TODO deal with stock manager stock when removed
 	}
 
 	@Override
@@ -279,8 +292,6 @@ public class Server implements ServerInterface {
 	public void setStock(Ingredient ingredient, Number stock) {
 		stockManager.setIngredientsStock(ingredient, stock);
 	}
-
-
 
 	@Override
 	public List<Ingredient> getIngredients() {
@@ -595,6 +606,7 @@ public class Server implements ServerInterface {
 	public void saveState(String filename) {
 		new DataPersistence(new File(filename)).writeStateToFile(restaurant, dishes, drones, ingredients, orders, staff,
 				suppliers, users, postcodes, stockManager);
+		System.out.println(orders.size());
 	}
 
 	@Override

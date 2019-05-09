@@ -70,8 +70,11 @@ public class Configuration {
                             Order order = retrieveOrder(users.get(parts[1]), parts[2], dishes);
                             if (parts.length >= 4) {
                                 order.setName(parts[3].replace("\\~", ":"));
+                                orders.put(parts[3], order);
+                            } else {
+                                orders.put(order.getName(), order);
                             }
-                            orders.put(parts[1], order);
+                            users.get(parts[1]).getOrders().add(order);
                             break;
                         case "STOCK":
                             if (dishes.containsKey(parts[1])) {
