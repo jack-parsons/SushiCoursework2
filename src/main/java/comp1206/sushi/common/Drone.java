@@ -164,6 +164,7 @@ public class Drone extends Model implements Runnable {
 					recharging = false;
 					setDestination(getSource());
 					setSource(restaurant.getLocation());
+					setProgress(0);
 					for (Model item : cargo.keySet()) {
 						setStatus("Flying to supplier for ingredient: " + item.getName());
 					}

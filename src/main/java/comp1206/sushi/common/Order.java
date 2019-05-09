@@ -114,7 +114,8 @@ public class Order extends Model {
 		if (dishes.size() > 0) {
 			StringBuilder sb = new StringBuilder();
 			for (Dish dish : dishes.keySet()) {
-				sb.append(dishes.get(dish)).append(" * ").append(dish.getName()).append(", ");
+				if (dishes.get(dish) != null)
+					sb.append(dishes.get(dish)).append(" * ").append(dish.getName()).append(", ");
 			}
 			sb.delete(sb.length() - 2, sb.length());
 			return sb.toString();

@@ -54,7 +54,7 @@ public class Server implements ServerInterface {
 
 		addUpdateListener(updateEvent -> {
 			for (ClientConnection clientConnection : commsController.getClientConnections()) {
-				updateClient(clientConnection);
+				updateClient(clientConnection, false);
 			}
 			stockManager.setOrders(orders);
 		});
@@ -64,12 +64,22 @@ public class Server implements ServerInterface {
 		new Thread(() -> {
 			while(true) {
 				processClientComms();
+				try {
+					Thread.sleep(10);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 			}
 		}).start();
 
 		new Thread(() -> {
 			while(true) {
-				notifyUpdate();
+				for (ClientConnection clientConnection : commsController.getClientConnections()) {
+					if (!clientConnection.checkUpdated()) {
+						updateClient(clientConnection, true);
+						clientConnection.sendMessage("FINISH_INIT");
+					}
+				}
 				try {
 					Thread.sleep(5000);
 				} catch (InterruptedException e) {
@@ -87,7 +97,7 @@ public class Server implements ServerInterface {
 		for (ClientConnection clientConnection : commsController.getClientConnections()) {
 			try {
 				if (!clientConnection.checkUpdated()) {
-					updateClient(clientConnection);
+					updateClient(clientConnection, true);
 					clientConnection.sendMessage(Comms.MessageType.FINISH_INIT.name());
 				}
 				String reply = "";
@@ -152,7 +162,7 @@ public class Server implements ServerInterface {
 									for (ClientConnection clientConnection2 : commsController.getClientConnections()) {
 										// Update all clients logged in as this user
 										if (clientConnection2.getUser() == clientConnection.getUser())
-											updateClient(clientConnection2);
+											updateClient(clientConnection2, false);
 									}
 								});
 
@@ -160,7 +170,7 @@ public class Server implements ServerInterface {
 								clientConnection.getUser().getOrders().add(order);
 								addOrder(order);
 								for (ClientConnection clientConnection2 : commsController.getClientConnections()) {
-									updateClient(clientConnection2);
+									updateClient(clientConnection2, false);
 								}
 								notifyUpdate();
 							}
@@ -171,7 +181,7 @@ public class Server implements ServerInterface {
 							for (ClientConnection clientConnection2 : commsController.getClientConnections()) {
 								// Update all clients logged in as this user
 								if (clientConnection2.getUser() == clientConnection.getUser())
-									updateClient(clientConnection2);
+									updateClient(clientConnection2, false);
 							}
 							notifyUpdate();
 							break;
@@ -188,7 +198,7 @@ public class Server implements ServerInterface {
 							for (ClientConnection clientConnection2 : commsController.getClientConnections()) {
 								// Update all clients logged in as this user
 								if (clientConnection2.getUser() == clientConnection.getUser())
-									updateClient(clientConnection2);
+									updateClient(clientConnection2, true);
 							}
 							notifyUpdate();
 					}
@@ -205,15 +215,18 @@ public class Server implements ServerInterface {
 		stockManager.setOrders(orders);
 	}
 
-	private void updateClient(ClientConnection clientConnection) {
+	private void updateClient(ClientConnection clientConnection, boolean includeDishes) {
 	    clientConnection.sendMessage("CLEAR_POSTCODES");
 	    for (Postcode postcode : postcodes) {
             clientConnection.sendMessage("ADD_POSTCODE|POSTCODE="+postcode);
         }
 
-		clientConnection.sendMessage("CLEAR_DISHES");
-        for (Dish dish : dishes) {
-			clientConnection.sendMessage(String.format("ADD_DISH|NAME=%s|DESCRIPTION=%s|PRICE=%s", dish.getName(), dish.getDescription(), dish.getPrice()));
+	    if (includeDishes) {
+			clientConnection.sendMessage("CLEAR_DISHES");
+			for (Dish dish : dishes) {
+				clientConnection.sendMessage(String.format("ADD_DISH|NAME=%s|DESCRIPTION=%s|PRICE=%s", dish.getName(), dish.getDescription(), dish.getPrice()));
+			}
+			clientConnection.sendMessage(String.format("BASKET_UPDATE|DISHES=%s", Order.dishQuantitiesToString(clientConnection.getUser().getBasket())));
 		}
 //
 		if (clientConnection.getUser() != null) {
@@ -224,7 +237,6 @@ public class Server implements ServerInterface {
 					clientConnection.sendMessage(String.format("ADD_ORDER|STATUS=%s|NAME=%s|DISHES=%s", order.getStatus(), order.getName(), order));
 				}
 			}
-			clientConnection.sendMessage(String.format("BASKET_UPDATE|DISHES=%s", Order.dishQuantitiesToString(clientConnection.getUser().getBasket())));
 		}
 
 		clientConnection.sendMessage(String.format("ADD_RESTAURANT|NAME=%s|POSTCODE=%s", restaurant.getName(), restaurant.getLocation()));
@@ -234,12 +246,16 @@ public class Server implements ServerInterface {
 	public List<Dish> getDishes() {
 		return this.dishes;
 	}
-
 	@Override
 	public Dish addDish(String name, String description, Number price, Number restockThreshold, Number restockAmount) {
 		Dish newDish = new Dish(name,description,price,restockThreshold,restockAmount);
 		this.dishes.add(newDish);
-		this.notifyUpdate();
+//		this.notifyUpdate();
+		if (commsController != null)
+			for (ClientConnection clientConnection: commsController.getClientConnections()) {
+				updateClient(clientConnection, true);
+				clientConnection.sendMessage("FINISH_INIT");
+			}
 		stockManager.setDishStock(newDish, 0);
 		return newDish;
 	}
@@ -260,7 +276,11 @@ public class Server implements ServerInterface {
 		}
 		this.dishes.remove(dish);
 		stockManager.removeDish(dish);
-		this.notifyUpdate();
+		if (commsController != null)
+			for (ClientConnection clientConnection: commsController.getClientConnections()) {
+				updateClient(clientConnection, true);
+				clientConnection.sendMessage("FINISH_INIT");
+			}
 	}
 
 	@Override
@@ -418,8 +438,7 @@ public class Server implements ServerInterface {
 	
 	@Override
 	public Number getOrderCost(Order order) {
-		Random random = new Random();
-		return random.nextInt(100);
+		return order.getOrderCost();
 	}
 
 	@Override

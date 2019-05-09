@@ -54,6 +54,8 @@ public class Configuration {
                         case "DISH":
                             Dish newDish = new Dish(parts[1], parts[2],
                                     Integer.parseInt(parts[3]), Integer.parseInt(parts[4]), Integer.parseInt(parts[5]));
+                            System.out.println(parts.length);
+                            System.out.println(parts[6]);
                             addDishIngredients(parts[6], newDish, ingredients);
                             dishes.put(parts[1], newDish);
                             break;
@@ -87,6 +89,7 @@ public class Configuration {
                             throw new IllegalArgumentException("Model type not valid: " + parts[0]);
                     }
                 } catch (IndexOutOfBoundsException e) {
+                    e.printStackTrace();
                     throw new IllegalArgumentException(String.format("Illegal number of parameters: %d for model %s", parts.length, parts[0]));
                 }
             }
@@ -96,8 +99,10 @@ public class Configuration {
     public static void addDishIngredients(String rawString, Dish dish, Map<String, Ingredient> ingredients) {
         Map <Ingredient,Number> recipe = new HashMap<>();
         for (String ingredient : rawString.split(",")) {
-            String[] ingredientParts = ingredient.split("\\*");
-            recipe.put(ingredients.get(ingredientParts[1].trim()), Integer.parseInt(ingredientParts[0].trim()));
+            if (!ingredient.equals("")) {
+                String[] ingredientParts = ingredient.split("\\*");
+                recipe.put(ingredients.get(ingredientParts[1].trim()), Integer.parseInt(ingredientParts[0].trim()));
+            }
         }
         dish.setRecipe(recipe);
     }
@@ -116,11 +121,35 @@ public class Configuration {
         if (line == null) {
             return null;
         }
-        String[] lines = line.split(":");
+        String[] lines = split(line);
         for (int i = 0; i < lines.length; i ++) {
             lines[i] = lines[i].trim();
         }
         return lines;
+    }
+
+    private static String[] split(String raw) {
+        int count = 0;
+        for (char c : raw.toCharArray()) {
+            if (c == ':') {
+                count ++;
+            }
+        }
+
+        String[] r = new String[count+1];
+        int a = 0;
+        String b = "";
+        for (char c : raw.toCharArray()) {
+            if (c == ':') {
+                r[a] = b;
+                a++;
+                b = "";
+            } else{
+                b += c;
+            }
+        }
+        r[count] = b;
+        return r;
     }
 
     public Restaurant getRestaurant() {

@@ -217,6 +217,11 @@ public class Client implements ClientInterface {
 		loggingIn = true;
 		clientComms.sendMessage(String.format("LOGIN|USERNAME=%s|PASSWORD=%s", username==null?"":username, password==null?"":password));
 		while (loggingIn) {
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 		loggingIn = false;
 		System.out.println("Logging in");
@@ -310,7 +315,11 @@ public class Client implements ClientInterface {
 
 	@Override
 	public void notifyUpdate() {
-		this.listeners.forEach(listener -> listener.updated(new UpdateEvent()));
+		try {
+			this.listeners.forEach(listener -> listener.updated(new UpdateEvent()));
+		} catch (NullPointerException e) {
+			//ignore
+		}
 	}
 
 }

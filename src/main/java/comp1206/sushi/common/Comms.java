@@ -12,37 +12,37 @@ public abstract class Comms {
     protected BufferedReader connectionInput;
 
     public enum MessageType {
-        LOGIN("LOGIN"),
-        REGISTER("REGISTER"),
-        NEW_USER("NEW_USER"),
-        CLEAR_POSTCODES("CLEAR_POSTCODES"),
-        ADD_POSTCODE("ADD_POSTCODE"),
-        CLEAR_DISHES("CLEAR_DISHES"),
-        ADD_DISH("ADD_DISH"),
-        ADD_RESTAURANT("ADD_RESTAURANT"),
-        CLEAR_ORDERS("CLEAR_ORDERS"),
-        CANCEL_ORDER("CANCEL_ORDER"),
-        ADD_ORDER("ADD_ORDER"),
-        LOGIN_REJECTED("LOGIN_REJECTED"),
-        BASKET_UPDATE("BASKET_UPDATE"),
-        FINISH_INIT("FINISH_INIT");
+            LOGIN("LOGIN"),
+            REGISTER("REGISTER"),
+            NEW_USER("NEW_USER"),
+            CLEAR_POSTCODES("CLEAR_POSTCODES"),
+            ADD_POSTCODE("ADD_POSTCODE"),
+            CLEAR_DISHES("CLEAR_DISHES"),
+            ADD_DISH("ADD_DISH"),
+            ADD_RESTAURANT("ADD_RESTAURANT"),
+            CLEAR_ORDERS("CLEAR_ORDERS"),
+            CANCEL_ORDER("CANCEL_ORDER"),
+            ADD_ORDER("ADD_ORDER"),
+            LOGIN_REJECTED("LOGIN_REJECTED"),
+            BASKET_UPDATE("BASKET_UPDATE"),
+            FINISH_INIT("FINISH_INIT");
 
-        String name;
-        MessageType (String name) {
-            this.name = name;
+            String name;
+            MessageType (String name) {
+                this.name = name;
+            }
         }
-    }
 
-    public enum MessageAttribute {
-        USERNAME("USERNAME"),
-        PASSWORD("PASSWORD"),
-        ADDRESS("ADDRESS"),
-        POSTCODE("POSTCODE"),
-        NAME("NAME"),
-        DESCRIPTION("DESCRIPTION"),
-        PRICE("PRICE"),
-        DISHES("DISHES"),
-        STATUS("STATUS");
+        public enum MessageAttribute {
+            USERNAME("USERNAME"),
+            PASSWORD("PASSWORD"),
+            ADDRESS("ADDRESS"),
+            POSTCODE("POSTCODE"),
+            NAME("NAME"),
+            DESCRIPTION("DESCRIPTION"),
+            PRICE("PRICE"),
+            DISHES("DISHES"),
+            STATUS("STATUS");
 
         String name;
         MessageAttribute (String name) {
